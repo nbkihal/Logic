@@ -25,12 +25,10 @@ import 'component_layer.dart';
 class CircuitCanvas extends ConsumerStatefulWidget {
   const CircuitCanvas({
     super.key,
-    required this.levelId,
     this.inputNames = const [],
     this.outputNames = const [],
   });
 
-  final int levelId;
   final List<String> inputNames;
   final List<String> outputNames;
 
@@ -58,16 +56,16 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
   }
 
   CircuitController get _circuit =>
-      ref.read(circuitControllerProvider(widget.levelId).notifier);
+      ref.read(circuitControllerProvider.notifier);
 
   BoardController get _board =>
-      ref.read(boardControllerProvider(widget.levelId).notifier);
+      ref.read(boardControllerProvider.notifier);
 
   @override
   Widget build(BuildContext context) {
-    final circuit = ref.watch(circuitControllerProvider(widget.levelId));
-    final simulation = ref.watch(simulationProvider(widget.levelId));
-    final board = ref.watch(boardControllerProvider(widget.levelId));
+    final circuit = ref.watch(circuitControllerProvider);
+    final simulation = ref.watch(simulationProvider);
+    final board = ref.watch(boardControllerProvider);
     final armed = board.armed != null;
 
     return LayoutBuilder(
@@ -166,7 +164,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
   void _onComponentTap(String id) {
     final component =
-        ref.read(circuitControllerProvider(widget.levelId)).components[id];
+        ref.read(circuitControllerProvider).components[id];
     if (component == null) return;
 
     // An input pin is a switch first and an object second: tapping it flips
@@ -180,7 +178,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
   }
 
   void _onPortTap(Port port) {
-    final board = ref.read(boardControllerProvider(widget.levelId));
+    final board = ref.read(boardControllerProvider);
     final source = board.wiringSource;
 
     if (source == null) {
@@ -190,7 +188,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
       }
       // Tapping a connected input port picks its wire, so it can be cut.
       final wire =
-          ref.read(circuitControllerProvider(widget.levelId)).wiresInto(port.id);
+          ref.read(circuitControllerProvider).wiresInto(port.id);
       if (wire != null) {
         _board.selectWire(wire.id);
       } else {
@@ -223,8 +221,8 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
   /// A tap that reached the background: a wire, or an empty cell.
   void _onBackgroundTap(Offset worldPoint) {
-    final circuit = ref.read(circuitControllerProvider(widget.levelId));
-    final board = ref.read(boardControllerProvider(widget.levelId));
+    final circuit = ref.read(circuitControllerProvider);
+    final board = ref.read(boardControllerProvider);
 
     final wireId = CanvasGeometry.wireIdAt(circuit, worldPoint);
     if (wireId != null) {
@@ -278,7 +276,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
   /// Frames every placed component, or the whole world if the board is bare.
   void _fitToContent(Size viewport) {
-    final circuit = ref.read(circuitControllerProvider(widget.levelId));
+    final circuit = ref.read(circuitControllerProvider);
     final content = CanvasGeometry.contentBounds(circuit.components.values) ??
         Offset.zero & CanvasGeometry.worldSize;
     final padded = content.inflate(CanvasConstants.fitPadding);

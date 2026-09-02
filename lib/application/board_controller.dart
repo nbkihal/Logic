@@ -61,9 +61,9 @@ class BoardUiState {
       );
 }
 
-class BoardController extends FamilyNotifier<BoardUiState, int> {
+class BoardController extends Notifier<BoardUiState> {
   @override
-  BoardUiState build(int levelId) => const BoardUiState();
+  BoardUiState build() => const BoardUiState();
 
   /// Arms a palette item, or disarms it when the same one is tapped again.
   void arm(GateType type) {
@@ -102,6 +102,4 @@ class BoardController extends FamilyNotifier<BoardUiState, int> {
 }
 
 final boardControllerProvider =
-    NotifierProvider.family<BoardController, BoardUiState, int>(
-  BoardController.new,
-);
+    NotifierProvider<BoardController, BoardUiState>(BoardController.new);

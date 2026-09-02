@@ -140,7 +140,7 @@ class GateWidget extends StatelessWidget {
               valueAt(port.id).isFloating,
           dimmed: _isWiring && !valueAt(port.id).isFloating,
           onTap: () => onPortTap?.call(port),
-          semanticLabel: 'Input ${i + 1} of ${_shortName}',
+          semanticLabel: 'Input ${i + 1} of $_shortName',
         ),
       );
     }
@@ -149,7 +149,7 @@ class GateWidget extends StatelessWidget {
       final port = Port.output(component.id);
       dots.add(
         _PortTarget(
-          centre: Offset(
+          centre: const Offset(
             inset + CanvasConstants.componentWidth,
             inset + CanvasConstants.componentHeight / 2,
           ),

@@ -14,13 +14,8 @@ import '../../domain/models/gate_type.dart';
 /// rather than a drag, so it works the same with a finger, a mouse, or a
 /// screen reader.
 class PaletteBar extends ConsumerWidget {
-  const PaletteBar({
-    super.key,
-    required this.levelId,
-    required this.palette,
-  });
+  const PaletteBar({super.key, required this.palette});
 
-  final int levelId;
   final Set<GateType> palette;
 
   /// A stable, teaching-order layout so a gate does not move between levels.
@@ -38,7 +33,7 @@ class PaletteBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final board = ref.watch(boardControllerProvider(levelId));
+    final board = ref.watch(boardControllerProvider);
     final available = _order.where(palette.contains).toList();
 
     return Semantics(
@@ -56,7 +51,7 @@ class PaletteBar extends ConsumerWidget {
                   vertical: AppSpacing.x8,
                 ),
                 itemCount: available.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(width: AppSpacing.x8),
                 itemBuilder: (context, index) {
                   final type = available[index];
@@ -64,14 +59,14 @@ class PaletteBar extends ConsumerWidget {
                     type: type,
                     armed: board.armed == type,
                     onTap: () =>
-                        ref.read(boardControllerProvider(levelId).notifier)
+                        ref.read(boardControllerProvider.notifier)
                             .arm(type),
                   );
                 },
               ),
             ),
             const SizedBox(width: AppSpacing.x8),
-            _DeleteButton(levelId: levelId),
+            const _DeleteButton(),
           ],
         ),
       ),
@@ -124,13 +119,11 @@ class _PaletteChip extends StatelessWidget {
 
 /// Deletes whatever is selected. Disabled — and visibly so — when nothing is.
 class _DeleteButton extends ConsumerWidget {
-  const _DeleteButton({required this.levelId});
-
-  final int levelId;
+  const _DeleteButton();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final board = ref.watch(boardControllerProvider(levelId));
+    final board = ref.watch(boardControllerProvider);
     final enabled = board.hasSelection;
 
     return Semantics(
@@ -142,7 +135,7 @@ class _DeleteButton extends ConsumerWidget {
         onPressed: enabled
             ? () {
                 final circuit =
-                    ref.read(circuitControllerProvider(levelId).notifier);
+                    ref.read(circuitControllerProvider.notifier);
                 final wireId = board.selectedWireId;
                 final componentId = board.selectedComponentId;
                 if (wireId != null) {
@@ -150,7 +143,7 @@ class _DeleteButton extends ConsumerWidget {
                 } else if (componentId != null) {
                   circuit.removeComponent(componentId);
                 }
-                ref.read(boardControllerProvider(levelId).notifier)
+                ref.read(boardControllerProvider.notifier)
                     .clearSelection();
               }
             : null,

@@ -11,18 +11,17 @@ import '../../domain/models/level.dart';
 
 /// Gate count against par, the history controls, and reset.
 class Hud extends ConsumerWidget {
-  const Hud({super.key, required this.levelId, required this.level});
+  const Hud({super.key, required this.level});
 
-  final int levelId;
   final Level level;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gates = ref.watch(gateCountProvider(levelId));
-    final controller = ref.read(circuitControllerProvider(levelId).notifier);
+    final gates = ref.watch(gateCountProvider);
+    final controller = ref.read(circuitControllerProvider.notifier);
     // Watching the circuit is what makes the undo/redo buttons re-evaluate
     // after an edit; the stacks themselves live on the controller.
-    ref.watch(circuitControllerProvider(levelId));
+    ref.watch(circuitControllerProvider);
 
     final overPar = gates > level.par;
 
@@ -54,7 +53,7 @@ class Hud extends ConsumerWidget {
           onPressed: controller.canUndo
               ? () {
                   controller.undo();
-                  ref.read(boardControllerProvider(levelId).notifier)
+                  ref.read(boardControllerProvider.notifier)
                       .clearSelection();
                 }
               : null,
@@ -65,7 +64,7 @@ class Hud extends ConsumerWidget {
           onPressed: controller.canRedo
               ? () {
                   controller.redo();
-                  ref.read(boardControllerProvider(levelId).notifier)
+                  ref.read(boardControllerProvider.notifier)
                       .clearSelection();
                 }
               : null,
@@ -101,8 +100,8 @@ class Hud extends ConsumerWidget {
       ),
     );
     if (confirmed ?? false) {
-      ref.read(circuitControllerProvider(levelId).notifier).reset();
-      ref.read(boardControllerProvider(levelId).notifier).clearSelection();
+      ref.read(circuitControllerProvider.notifier).reset();
+      ref.read(boardControllerProvider.notifier).clearSelection();
     }
   }
 }

@@ -7,7 +7,6 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/engine/win_checker.dart';
 import '../../domain/models/level.dart';
-import '../../domain/models/logic.dart';
 
 /// How the board is doing, in one line.
 ///
@@ -47,19 +46,14 @@ import '../../domain/models/logic.dart';
 
 /// Target versus current, row by row, with the failing rows called out.
 class TruthTablePanel extends ConsumerWidget {
-  const TruthTablePanel({
-    super.key,
-    required this.levelId,
-    required this.level,
-  });
+  const TruthTablePanel({super.key, required this.level});
 
-  final int levelId;
   final Level level;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final report = ref.watch(solveReportProvider(levelId));
-    final revealed = ref.watch(hintRevealedProvider(levelId));
+    final report = ref.watch(solveReportProvider);
+    final revealed = ref.watch(hintRevealedProvider);
     final hidden = !level.showTargetTable && !revealed;
     final text = Theme.of(context).textTheme;
 
@@ -73,7 +67,7 @@ class TruthTablePanel extends ConsumerWidget {
             if (hidden)
               FilledButton(
                 onPressed: () => ref
-                    .read(hintRevealedProvider(levelId).notifier)
+                    .read(hintRevealedProvider.notifier)
                     .reveal(),
                 child: const Text('Reveal'),
               ),
@@ -102,7 +96,7 @@ class _Table extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final table = level.target;
-    final style = AppTypography.pinLabel;
+    const style = AppTypography.pinLabel;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -195,12 +189,4 @@ class _Row extends StatelessWidget {
       ),
     );
   }
-}
-
-extension on Logic {
-  String get glyph => switch (this) {
-        Logic.low => '0',
-        Logic.high => '1',
-        Logic.floating => 'X',
-      };
 }

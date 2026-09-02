@@ -27,7 +27,7 @@ class ProgressController extends AsyncNotifier<Progress> {
     required int stars,
     required int gateCount,
   }) async {
-    final current = state.valueOrNull ?? const Progress();
+    final current = state.value ?? const Progress();
     await _write(
       current.withLevel(
         levelId,
@@ -37,14 +37,14 @@ class ProgressController extends AsyncNotifier<Progress> {
   }
 
   Future<void> updateSettings(GameSettings settings) async {
-    final current = state.valueOrNull ?? const Progress();
+    final current = state.value ?? const Progress();
     await _write(current.withSettings(settings));
   }
 
   /// Wipes stars and bests but keeps the player's settings — resetting
   /// progress should not also undo their motion or sound preferences.
   Future<void> resetProgress() async {
-    final settings = (state.valueOrNull ?? const Progress()).settings;
+    final settings = (state.value ?? const Progress()).settings;
     await _write(Progress(settings: settings));
   }
 }
@@ -56,7 +56,7 @@ final progressControllerProvider =
 
 /// Progress with a safe default while the store is still loading.
 final progressProvider = Provider<Progress>((ref) {
-  return ref.watch(progressControllerProvider).valueOrNull ?? const Progress();
+  return ref.watch(progressControllerProvider).value ?? const Progress();
 });
 
 /// Current settings, likewise defaulted.

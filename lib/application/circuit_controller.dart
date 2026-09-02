@@ -8,6 +8,7 @@ import '../domain/models/gate_type.dart';
 import '../domain/models/level.dart';
 import '../domain/models/port.dart';
 import '../domain/models/wire.dart';
+import 'level_scope.dart';
 
 /// Why a wiring attempt did not take.
 enum WireOutcome {
@@ -29,16 +30,16 @@ enum PlaceOutcome { placed, gateLimitReached, occupied }
 /// Every edit goes through an intent method here, and every intent pushes the
 /// previous board onto the undo stack first. Because `Circuit` is immutable,
 /// a snapshot is a cheap map copy rather than a deep clone.
-class CircuitController extends FamilyNotifier<Circuit, int> {
+class CircuitController extends Notifier<Circuit> {
   final _undo = <Circuit>[];
   final _redo = <Circuit>[];
   var _nextId = 0;
 
-  Level? get _level => const LevelRepository().byId(arg);
+  Level? get _level => ref.read(levelProvider);
 
   @override
-  Circuit build(int levelId) {
-    final level = const LevelRepository().byId(levelId);
+  Circuit build() {
+    final level = ref.watch(levelProvider);
     return level == null
         ? const Circuit.empty()
         : LevelFixtures.startingCircuit(level);
@@ -218,6 +219,4 @@ class CircuitController extends FamilyNotifier<Circuit, int> {
 }
 
 final circuitControllerProvider =
-    NotifierProvider.family<CircuitController, Circuit, int>(
-  CircuitController.new,
-);
+    NotifierProvider<CircuitController, Circuit>(CircuitController.new);
