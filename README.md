@@ -15,12 +15,23 @@ Built in phases, each behind a review gate.
 | 0 | Setup, theme tokens, routing shell | done |
 | 1 | Domain models + simulation engine (no UI) | done |
 | 2 | Static canvas rendering | done |
-| 3 | Interaction: place, move, wire, delete, undo | not started |
-| 4 | Tester panel + win detection | not started |
+| 3 | Interaction: place, move, wire, delete, undo | done |
+| 4 | Tester panel + win detection | done |
 | 5 | Animation catalogue | not started |
-| 6 | Levels, scoring, persistence | not started |
-| 7 | Screens, responsive, accessibility | not started |
+| 6 | Levels, scoring, persistence | done |
+| 7 | Screens, responsive, accessibility | done |
 | 8 | Test gaps, docs, ship | not started |
+
+Phase 5 (the animation catalogue) is the one gap: the game is fully playable
+without it, so it was deferred rather than blocking play.
+
+## Playing it
+
+Tap a gate in the bottom bar to pick it up, then tap the board to drop it.
+Tap an output dot (right of a component), then an input dot (left) to wire
+them. Tap an input pin to flip it. Long-press a gate to drag it; tap a gate or
+wire and hit the bin to remove it. The status bar above the board opens the
+truth table.
 
 ## Running it
 

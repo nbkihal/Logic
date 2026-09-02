@@ -108,7 +108,7 @@ class HowToPlayScreen extends StatelessWidget {
           const _Section(title: 'Controls', steps: _controls),
           const _Section(title: 'Scoring', steps: _scoring),
           const SizedBox(height: AppSpacing.x24),
-          _Legend(),
+          const _Legend(),
           const SizedBox(height: AppSpacing.x24),
           FilledButton(
             onPressed: () => context.go(AppRoutes.levelSelect),
@@ -188,6 +188,8 @@ class _Step extends StatelessWidget {
 /// What the colours and glyphs on the board mean — the same information the
 /// board itself carries twice over, so nobody has to guess.
 class _Legend extends StatelessWidget {
+  const _Legend();
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -203,17 +205,17 @@ class _Legend extends StatelessWidget {
         children: [
           Text('SIGNALS', style: text.labelSmall?.copyWith(letterSpacing: 2)),
           const SizedBox(height: AppSpacing.x12),
-          _LegendRow(
+          const _LegendRow(
             colour: SignalColors.high,
             glyph: '1',
             label: 'Carrying a one — the wire glows.',
           ),
-          _LegendRow(
+          const _LegendRow(
             colour: SignalColors.low,
             glyph: '0',
             label: 'Carrying a zero — the wire is dark.',
           ),
-          _LegendRow(
+          const _LegendRow(
             colour: SignalColors.floating,
             glyph: 'X',
             label: 'Nothing connected — the wire is dashed.',

@@ -56,30 +56,23 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           _Card(
-            child: SwitchListTile(
-              contentPadding: EdgeInsets.zero,
+            child: _SwitchRow(
+              title: 'Reduced motion',
+              subtitle:
+                  'Signals and celebrations change state without travelling.',
               value: settings.reducedMotion,
               onChanged: (value) => controller.updateSettings(
                 settings.copyWith(reducedMotion: value),
               ),
-              title: Text('Reduced motion', style: text.titleSmall),
-              subtitle: Text(
-                'Signals and celebrations change state without travelling.',
-                style: text.bodySmall,
-              ),
             ),
           ),
           _Card(
-            child: SwitchListTile(
-              contentPadding: EdgeInsets.zero,
+            child: _SwitchRow(
+              title: 'Sound effects',
+              subtitle: 'Small clicks and chimes while you build.',
               value: settings.soundEnabled,
               onChanged: (value) => controller.updateSettings(
                 settings.copyWith(soundEnabled: value),
-              ),
-              title: Text('Sound effects', style: text.titleSmall),
-              subtitle: Text(
-                'Small clicks and chimes while you build.',
-                style: text.bodySmall,
               ),
             ),
           ),
@@ -157,6 +150,52 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: child,
+    );
+  }
+}
+
+/// A labelled switch.
+///
+/// Hand-rolled rather than `SwitchListTile`, which insists on painting its
+/// background onto the nearest Material and asserts when it sits inside a
+/// coloured card — which every card in this flat design is.
+class _SwitchRow extends StatelessWidget {
+  const _SwitchRow({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+
+    return Semantics(
+      toggled: value,
+      label: title,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: text.titleSmall),
+                const SizedBox(height: AppSpacing.x4),
+                Text(subtitle, style: text.bodySmall),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.x12),
+          Switch(value: value, onChanged: onChanged),
+        ],
+      ),
     );
   }
 }
