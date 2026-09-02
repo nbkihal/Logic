@@ -172,10 +172,10 @@ class _GameViewState extends ConsumerState<_GameView> {
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppRadii.card)),
       ),
-      // The sheet is built outside this widget's scope, so it needs the
-      // level scope handed to it explicitly.
-      builder: (sheetContext) => ProviderScope(
-        parent: ProviderScope.containerOf(context),
+      // The sheet is built from the navigator's context, outside this
+      // widget's level scope, so hand it the same container explicitly.
+      builder: (sheetContext) => UncontrolledProviderScope(
+        container: ProviderScope.containerOf(context),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(

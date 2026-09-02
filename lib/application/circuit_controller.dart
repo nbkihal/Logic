@@ -218,5 +218,7 @@ class CircuitController extends Notifier<Circuit> {
   }
 }
 
-final circuitControllerProvider =
-    NotifierProvider<CircuitController, Circuit>(CircuitController.new);
+final circuitControllerProvider = NotifierProvider<CircuitController, Circuit>(
+  CircuitController.new,
+  dependencies: [levelProvider],
+);

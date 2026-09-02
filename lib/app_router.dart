@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import 'presentation/screens/game/game_screen.dart';
 import 'presentation/screens/home/home_screen.dart';
+import 'presentation/screens/how_to_play/how_to_play_screen.dart';
 import 'presentation/screens/level_select/level_select_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
 
@@ -10,6 +11,7 @@ abstract final class AppRoutes {
   static const home = '/';
   static const levelSelect = '/levels';
   static const settings = '/settings';
+  static const howToPlay = '/how-to-play';
 
   /// Game takes the level id as a path parameter.
   static const gamePattern = '/levels/:levelId';
@@ -39,6 +41,10 @@ GoRouter buildRouter({String initialLocation = AppRoutes.home}) {
       GoRoute(
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.howToPlay,
+        builder: (context, state) => const HowToPlayScreen(),
       ),
     ],
   );

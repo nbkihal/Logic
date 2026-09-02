@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app_router.dart';
+import '../../../application/progress_controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../data/levels/level_repository.dart';
 
-/// Title screen. Phase 7 adds the idling demo circuit behind the type.
-class HomeScreen extends StatelessWidget {
+/// Title screen. Continue where you left off, or start from the beginning.
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
+    final progress = ref.watch(progressProvider);
+    final levelCount = const LevelRepository().count;
+    final resume = progress.highestUnlocked(levelCount);
+    final started = progress.totalStars > 0;
     final wide = MediaQuery.sizeOf(context).width >= 768;
 
     return Scaffold(
@@ -21,7 +28,7 @@ class HomeScreen extends StatelessWidget {
           child: ConstrainedBox(
             constraints:
                 const BoxConstraints(maxWidth: AppSpacing.pageMaxWidth),
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.x24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -46,21 +53,38 @@ class HomeScreen extends StatelessWidget {
                       style: text.bodyLarge,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.x40),
+                  const SizedBox(height: AppSpacing.x32),
                   Wrap(
                     spacing: AppSpacing.x12,
                     runSpacing: AppSpacing.x12,
                     children: [
                       FilledButton(
-                        onPressed: () => context.go(AppRoutes.levelSelect),
-                        child: const Text('Play'),
+                        onPressed: () => context.go(AppRoutes.game(resume)),
+                        child: Text(started ? 'Continue' : 'Play'),
                       ),
                       OutlinedButton(
+                        onPressed: () => context.go(AppRoutes.levelSelect),
+                        child: const Text('Levels'),
+                      ),
+                      OutlinedButton(
+                        onPressed: () => context.go(AppRoutes.howToPlay),
+                        child: const Text('How to play'),
+                      ),
+                      TextButton(
                         onPressed: () => context.go(AppRoutes.settings),
                         child: const Text('Settings'),
                       ),
                     ],
                   ),
+                  if (started) ...[
+                    const SizedBox(height: AppSpacing.x32),
+                    Text(
+                      '${progress.totalStars} of ${levelCount * 3} stars — '
+                      'up to level $resume.',
+                      style: text.bodySmall
+                          ?.copyWith(color: AppColors.obsidianMuted),
+                    ),
+                  ],
                 ],
               ),
             ),

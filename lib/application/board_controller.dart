@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/models/gate_type.dart';
 import '../domain/models/port.dart';
+import 'level_scope.dart';
 
 /// Transient, per-level board state that belongs to the UI rather than to the
 /// circuit: what is armed in the palette, what is selected, and whether a
@@ -102,4 +103,9 @@ class BoardController extends Notifier<BoardUiState> {
 }
 
 final boardControllerProvider =
-    NotifierProvider<BoardController, BoardUiState>(BoardController.new);
+    NotifierProvider<BoardController, BoardUiState>(
+  BoardController.new,
+  // Selection and the armed palette item are per-level, so this has to be
+  // rebuilt inside the level scope even though it reads nothing from it.
+  dependencies: [levelIdProvider],
+);
