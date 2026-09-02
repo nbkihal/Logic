@@ -16,11 +16,15 @@ class CircuitPainter extends CustomPainter {
     required this.circuit,
     required this.simulation,
     required this.showGrid,
+    this.selectedWireId,
   });
 
   final Circuit circuit;
   final SimulationResult simulation;
   final bool showGrid;
+
+  /// Drawn in Plasma Violet so a tapped wire is obviously the delete target.
+  final String? selectedWireId;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -57,6 +61,9 @@ class CircuitPainter extends CustomPainter {
       if (cycleWires.contains(wire.id)) {
         _strokeCycle(canvas, path);
         continue;
+      }
+      if (wire.id == selectedWireId) {
+        canvas.drawPath(path, _paint(AppColors.plasmaViolet, width: 9));
       }
 
       final value = simulation.valueAt(wire.from.id);
@@ -107,6 +114,7 @@ class CircuitPainter extends CustomPainter {
   @override
   bool shouldRepaint(CircuitPainter old) =>
       old.showGrid != showGrid ||
+      old.selectedWireId != selectedWireId ||
       !identical(old.circuit, circuit) ||
       !identical(old.simulation, simulation);
 }

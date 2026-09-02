@@ -9,68 +9,116 @@ import '../../domain/models/gate_type.dart';
 import '../../domain/models/logic.dart';
 import '../../domain/models/port.dart';
 
-/// One component rendered on the board: the body plus its ports.
+/// One component on the board: the body, its ports, and every gesture that
+/// targets it.
 ///
-/// Components are widgets rather than paint calls so they can host gestures
-/// (Phase 3) and semantics, and so each can run its own micro-animations
-/// later without repainting the whole canvas.
+/// The widget is larger than the component it draws — it carries
+/// [CanvasConstants.portHitRadius] of padding on every side so the port
+/// targets clear 44px without the dots visually leaving the body edge. Hit
+/// tests do not reach children drawn outside their parent, so the padding is
+/// what makes the ports tappable at all.
 class GateWidget extends StatelessWidget {
   const GateWidget({
     super.key,
     required this.component,
     required this.valueAt,
     this.label,
+    this.selected = false,
+    this.wiringSource,
+    this.onTap,
+    this.onPortTap,
+    this.onMoveStart,
+    this.onMoveUpdate,
+    this.onMoveEnd,
   });
 
+  /// Total footprint including the port-target padding.
+  static const double outerWidth =
+      CanvasConstants.componentWidth + CanvasConstants.portHitRadius * 2;
+  static const double outerHeight =
+      CanvasConstants.componentHeight + CanvasConstants.portHitRadius * 2;
+  static const double inset = CanvasConstants.portHitRadius;
+
   final Component component;
-
-  /// Resolves a port id to its current value.
   final Logic Function(String portId) valueAt;
-
-  /// Column name for a pin or lamp, e.g. `A` or `SUM`. Gates have none.
   final String? label;
+
+  /// Draws the selection ring, and tells the HUD what Delete would remove.
+  final bool selected;
+
+  /// The output port a wire is currently being drawn from, if any. Compatible
+  /// input ports pulse while this is set, so wiring feels guided.
+  final Port? wiringSource;
+
+  final VoidCallback? onTap;
+  final void Function(Port port)? onPortTap;
+  final VoidCallback? onMoveStart;
+  final void Function(Offset globalPosition)? onMoveUpdate;
+  final VoidCallback? onMoveEnd;
 
   Logic get _outputValue => component.hasOutputPort
       ? valueAt(Port.outputId(component.id))
       : valueAt(Port.inputId(component.id, 0));
 
+  bool get _isWiring => wiringSource != null;
+
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      label: _semanticLabel,
-      container: true,
-      // The label already states type and value; without this, the body's
-      // own text ("AND", "1") is folded in and announced twice.
-      excludeSemantics: true,
-      child: SizedBox(
-        width: CanvasConstants.componentWidth,
-        height: CanvasConstants.componentHeight,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(child: _body()),
-            ..._ports(),
-          ],
-        ),
+    return SizedBox(
+      width: outerWidth,
+      height: outerHeight,
+      child: Stack(
+        children: [
+          Positioned(
+            left: inset,
+            top: inset,
+            width: CanvasConstants.componentWidth,
+            height: CanvasConstants.componentHeight,
+            child: Semantics(
+              label: _semanticLabel,
+              button: true,
+              container: true,
+              excludeSemantics: true,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                // Long-press to drag, so moving a component never fights the
+                // canvas pan for the same one-finger gesture.
+                onLongPressStart: (_) => onMoveStart?.call(),
+                onLongPressMoveUpdate: (d) =>
+                    onMoveUpdate?.call(d.globalPosition),
+                onLongPressEnd: (_) => onMoveEnd?.call(),
+                onLongPressCancel: onMoveEnd,
+                child: _body(),
+              ),
+            ),
+          ),
+          ..._ports(),
+        ],
       ),
     );
   }
 
-  Widget _body() => switch (component.type) {
-        GateType.input => _PinBody(
-            label: label ?? 'IN',
-            value: _outputValue,
-          ),
-        GateType.constant => _PinBody(
-            label: component.constantValue ? '1' : '0',
-            value: _outputValue,
-          ),
-        GateType.output => _LampBody(
-            label: label ?? 'OUT',
-            value: _outputValue,
-          ),
-        _ => _GateBody(type: component.type, value: _outputValue),
-      };
+  Widget _body() {
+    final body = switch (component.type) {
+      GateType.input => _PinBody(label: label ?? 'IN', value: _outputValue),
+      GateType.constant => _PinBody(
+          label: component.constantValue ? '1' : '0',
+          value: _outputValue,
+        ),
+      GateType.output => _LampBody(label: label ?? 'OUT', value: _outputValue),
+      _ => _GateBody(type: component.type, value: _outputValue),
+    };
+
+    if (!selected) return body;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadii.small + 4),
+        border: Border.all(color: AppColors.plasmaViolet, width: 3),
+      ),
+      child: Padding(padding: const EdgeInsets.all(3), child: body),
+    );
+  }
 
   List<Widget> _ports() {
     final dots = <Widget>[];
@@ -78,23 +126,38 @@ class GateWidget extends StatelessWidget {
 
     for (var i = 0; i < count; i++) {
       final fraction = count <= 1 ? 0.5 : (i + 1) / (count + 1);
+      final port = Port.input(component.id, i);
       dots.add(
-        Positioned(
-          left: -CanvasConstants.portRadius,
-          top: CanvasConstants.componentHeight * fraction -
-              CanvasConstants.portRadius,
-          child: _PortDot(value: valueAt(Port.inputId(component.id, i))),
+        _PortTarget(
+          centre: Offset(
+            inset,
+            inset + CanvasConstants.componentHeight * fraction,
+          ),
+          value: valueAt(port.id),
+          // While a wire is being drawn, free input ports invite the drop.
+          highlighted: _isWiring &&
+              wiringSource!.componentId != component.id &&
+              valueAt(port.id).isFloating,
+          dimmed: _isWiring && !valueAt(port.id).isFloating,
+          onTap: () => onPortTap?.call(port),
+          semanticLabel: 'Input ${i + 1} of ${_shortName}',
         ),
       );
     }
 
     if (component.hasOutputPort) {
+      final port = Port.output(component.id);
       dots.add(
-        Positioned(
-          left: CanvasConstants.componentWidth - CanvasConstants.portRadius,
-          top: CanvasConstants.componentHeight / 2 -
-              CanvasConstants.portRadius,
-          child: _PortDot(value: valueAt(Port.outputId(component.id))),
+        _PortTarget(
+          centre: Offset(
+            inset + CanvasConstants.componentWidth,
+            inset + CanvasConstants.componentHeight / 2,
+          ),
+          value: valueAt(port.id),
+          highlighted: wiringSource?.id == port.id,
+          dimmed: _isWiring && wiringSource?.id != port.id,
+          onTap: () => onPortTap?.call(port),
+          semanticLabel: 'Output of $_shortName',
         ),
       );
     }
@@ -102,18 +165,24 @@ class GateWidget extends StatelessWidget {
     return dots;
   }
 
+  String get _shortName => switch (component.type) {
+        GateType.input => 'input ${label ?? ''}',
+        GateType.output => 'output ${label ?? ''}',
+        GateType.constant => 'constant',
+        _ => '${component.type.label} gate',
+      };
+
   String get _semanticLabel {
-    final value = _outputValue;
-    final state = switch (value) {
+    final state = switch (_outputValue) {
       Logic.high => 'high',
       Logic.low => 'low',
       Logic.floating => 'not connected',
     };
     return switch (component.type) {
-      GateType.input => 'Input ${label ?? ''} switch, $state',
+      GateType.input =>
+        'Input ${label ?? ''} switch, $state. Double tap to flip.',
       GateType.output => 'Output ${label ?? ''} lamp, $state',
-      GateType.constant =>
-        'Constant ${component.constantValue ? '1' : '0'}',
+      GateType.constant => 'Constant ${component.constantValue ? '1' : '0'}',
       _ => '${component.type.label} gate, output $state',
     };
   }
@@ -234,31 +303,70 @@ class _LampBody extends StatelessWidget {
   }
 }
 
-/// A connection point. Filled with its value, ringed in Obsidian so it stays
-/// visible against both the Limestone body and the Pumice canvas.
-class _PortDot extends StatelessWidget {
-  const _PortDot({required this.value});
+/// A port: a small dot with a touch target far larger than it looks.
+class _PortTarget extends StatelessWidget {
+  const _PortTarget({
+    required this.centre,
+    required this.value,
+    required this.highlighted,
+    required this.dimmed,
+    required this.onTap,
+    required this.semanticLabel,
+  });
 
+  final Offset centre;
   final Logic value;
+  final bool highlighted;
+  final bool dimmed;
+  final VoidCallback onTap;
+  final String semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (value) {
+    const hit = CanvasConstants.portHitRadius;
+    final radius =
+        highlighted ? CanvasConstants.portRadius + 3 : CanvasConstants.portRadius;
+
+    final fill = switch (value) {
       Logic.high => SignalColors.high,
       Logic.low => SignalColors.low,
       Logic.floating => AppColors.limestone,
     };
-    return Container(
-      width: CanvasConstants.portRadius * 2,
-      height: CanvasConstants.portRadius * 2,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(
-          color: value.isFloating
-              ? SignalColors.floating
-              : AppColors.obsidian,
-          width: 1.5,
+
+    return Positioned(
+      left: centre.dx - hit,
+      top: centre.dy - hit,
+      width: hit * 2,
+      height: hit * 2,
+      child: Semantics(
+        label: semanticLabel,
+        button: true,
+        excludeSemantics: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Center(
+            child: AnimatedOpacity(
+              opacity: dimmed ? 0.35 : 1,
+              duration: const Duration(milliseconds: 150),
+              child: Container(
+                width: radius * 2,
+                height: radius * 2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: fill,
+                  border: Border.all(
+                    color: highlighted
+                        ? AppColors.plasmaViolet
+                        : value.isFloating
+                            ? SignalColors.floating
+                            : AppColors.obsidian,
+                    width: highlighted ? 3 : 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

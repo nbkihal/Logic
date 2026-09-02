@@ -30,13 +30,12 @@ class GameScreen extends StatelessWidget {
         children: [
           const SizedBox(height: AppSpacing.x16),
           _Header(level: level, levelId: levelId),
-          const SizedBox(height: AppSpacing.x12),
+          const SizedBox(height: AppSpacing.x8),
           Text(
-            'Phase 2 preview — a fixed board, drawn from the engine. '
-            'Pan, pinch and zoom work; editing arrives in Phase 3.',
-            style: text.bodyMedium?.copyWith(color: AppColors.obsidianMuted),
+            'Phase 2 preview — pan and zoom work, editing lands in Phase 3.',
+            style: text.bodySmall?.copyWith(color: AppColors.obsidianMuted),
           ),
-          const SizedBox(height: AppSpacing.x16),
+          const SizedBox(height: AppSpacing.x12),
           Expanded(
             child: CircuitCanvas(
               inputNames: level?.target.inputNames ?? const [],
@@ -72,7 +71,12 @@ class _Header extends StatelessWidget {
                 style: text.headlineSmall,
               ),
               if (level != null)
-                Text(level!.blurb, style: text.bodyMedium),
+                Text(
+                  level!.blurb,
+                  style: text.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
             ],
           ),
         ),

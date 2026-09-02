@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
 import '../../core/constants/canvas_constants.dart';
+import '../../domain/models/circuit.dart';
 import '../../domain/models/component.dart';
 import '../../domain/models/port.dart';
 
@@ -90,5 +91,44 @@ abstract final class CanvasGeometry {
         to.dx,
         to.dy,
       );
+  }
+
+  /// The wire whose curve passes closest to [world], or null if none is
+  /// within [tolerance].
+  ///
+  /// Walks each Bezier's metrics and samples along it — exact enough for a
+  /// tap target, and far simpler than solving the cubic.
+  static String? wireIdAt(
+    Circuit circuit,
+    Offset world, {
+    double tolerance = 18,
+  }) {
+    String? closest;
+    var best = tolerance;
+
+    for (final wire in circuit.wires.values) {
+      final source = circuit.components[wire.fromComponentId];
+      final target = circuit.components[wire.toComponentId];
+      if (source == null || target == null) continue;
+
+      final path = wirePath(
+        anchorOf(source, wire.from),
+        anchorOf(target, wire.to),
+      );
+      for (final metric in path.computeMetrics()) {
+        const samples = 24;
+        for (var i = 0; i <= samples; i++) {
+          final point =
+              metric.getTangentForOffset(metric.length * i / samples)?.position;
+          if (point == null) continue;
+          final distance = (point - world).distance;
+          if (distance < best) {
+            best = distance;
+            closest = wire.id;
+          }
+        }
+      }
+    }
+    return closest;
   }
 }

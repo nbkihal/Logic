@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logic_circuit_builder/application/circuit_controller.dart';
@@ -184,6 +185,54 @@ void main() {
       // `constrained: false` is what lets the world be bigger than the
       // viewport and pan inside it.
       expect(viewer.constrained, isFalse);
+    });
+
+    testWidgets('frames the whole board inside a short, narrow viewport',
+        (tester) async {
+      // The real phone layout leaves the canvas a wide-but-short box under
+      // the header. The board overflowed it on device before the fit
+      // reframed on viewport changes rather than only on the first layout.
+      const viewport = Size(345, 430);
+      await pumpCanvas(tester, DemoCircuit.build(), size: viewport);
+
+      for (final element in find.byType(GateWidget).evaluate()) {
+        final box = element.renderObject! as RenderBox;
+        final scale = tester
+            .widget<InteractiveViewer>(find.byType(InteractiveViewer))
+            .transformationController!
+            .value
+            .getMaxScaleOnAxis();
+        final topLeft = box.localToGlobal(Offset.zero);
+        final id = (element.widget as GateWidget).component.id;
+
+        expect(topLeft.dx, greaterThanOrEqualTo(-1), reason: '$id off left');
+        expect(topLeft.dy, greaterThanOrEqualTo(-1), reason: '$id off top');
+        expect(
+          topLeft.dx + box.size.width * scale,
+          lessThanOrEqualTo(viewport.width + 1),
+          reason: '$id off right',
+        );
+        expect(
+          topLeft.dy + box.size.height * scale,
+          lessThanOrEqualTo(viewport.height + 1),
+          reason: '$id off bottom',
+        );
+      }
+    });
+
+    testWidgets('reframes when the viewport changes', (tester) async {
+      await pumpCanvas(tester, DemoCircuit.build(), size: const Size(345, 430));
+      double scale() => tester
+          .widget<InteractiveViewer>(find.byType(InteractiveViewer))
+          .transformationController!
+          .value
+          .getMaxScaleOnAxis();
+      final narrow = scale();
+
+      await tester.binding.setSurfaceSize(const Size(900, 700));
+      await tester.pumpAndSettle();
+
+      expect(scale(), greaterThan(narrow));
     });
 
     testWidgets('zoom controls change the scale', (tester) async {

@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 import '../../domain/models/circuit.dart';
 import '../../domain/models/gate_type.dart';
 import '../../domain/models/logic.dart';
+import '../../domain/models/port.dart';
 import '../widgets/gate_widget.dart';
 import 'canvas_geometry.dart';
 
-/// Positions one [GateWidget] per component over the painter.
-///
-/// Kept separate from the painter so components stay real widgets: from
-/// Phase 3 they carry the drag and tap gestures, and they already carry the
-/// semantics a screen reader walks.
+/// Positions one [GateWidget] per component over the painter and routes their
+/// gestures back up to the canvas.
 class ComponentLayer extends StatelessWidget {
   const ComponentLayer({
     super.key,
@@ -18,6 +16,13 @@ class ComponentLayer extends StatelessWidget {
     required this.valueAt,
     this.inputNames = const [],
     this.outputNames = const [],
+    this.selectedComponentId,
+    this.wiringSource,
+    this.onComponentTap,
+    this.onPortTap,
+    this.onMoveStart,
+    this.onMoveUpdate,
+    this.onMoveEnd,
   });
 
   final Circuit circuit;
@@ -25,9 +30,16 @@ class ComponentLayer extends StatelessWidget {
 
   /// Truth-table column names, in the same order as [Circuit.inputPins].
   final List<String> inputNames;
-
-  /// Truth-table column names, in the same order as [Circuit.outputLamps].
   final List<String> outputNames;
+
+  final String? selectedComponentId;
+  final Port? wiringSource;
+
+  final void Function(String componentId)? onComponentTap;
+  final void Function(Port port)? onPortTap;
+  final void Function(String componentId)? onMoveStart;
+  final void Function(String componentId, Offset globalPosition)? onMoveUpdate;
+  final VoidCallback? onMoveEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -38,21 +50,31 @@ class ComponentLayer extends StatelessWidget {
       children: [
         for (final component in circuit.components.values)
           Positioned(
-            left: CanvasGeometry.boundsOf(component).left,
-            top: CanvasGeometry.boundsOf(component).top,
+            // The widget carries port-target padding, so it sits back and up
+            // from the component's own bounds by that inset.
+            left: CanvasGeometry.boundsOf(component).left - GateWidget.inset,
+            top: CanvasGeometry.boundsOf(component).top - GateWidget.inset,
             child: GateWidget(
               key: ValueKey(component.id),
               component: component,
               valueAt: valueAt,
               label: labels[component.id],
+              selected: component.id == selectedComponentId,
+              wiringSource: wiringSource,
+              onTap: () => onComponentTap?.call(component.id),
+              onPortTap: onPortTap,
+              onMoveStart: () => onMoveStart?.call(component.id),
+              onMoveUpdate: (global) =>
+                  onMoveUpdate?.call(component.id, global),
+              onMoveEnd: onMoveEnd,
             ),
           ),
       ],
     );
   }
 
-  /// Maps each pin and lamp to its truth-table column name, falling back to
-  /// a positional name when the level has not supplied one.
+  /// Maps each pin and lamp to its truth-table column name, falling back to a
+  /// positional name when the level has not supplied one.
   Map<String, String> _labels() {
     final labels = <String, String>{};
 
