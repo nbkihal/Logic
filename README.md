@@ -1,0 +1,77 @@
+# Logic Circuit Builder
+
+An educational Boolean-logic puzzle game. Drag logic gates onto a board, wire
+them together, and make the outputs match a target truth table — from a single
+NOT gate up to a 2-bit comparator.
+
+Flutter, one codebase, targeting Android, iOS and Web.
+
+## Status
+
+Built in phases, each behind a review gate.
+
+| Phase | Scope | State |
+| --- | --- | --- |
+| 0 | Setup, theme tokens, routing shell | done |
+| 1 | Domain models + simulation engine (no UI) | done |
+| 2 | Static canvas rendering | not started |
+| 3 | Interaction: place, move, wire, delete, undo | not started |
+| 4 | Tester panel + win detection | not started |
+| 5 | Animation catalogue | not started |
+| 6 | Levels, scoring, persistence | not started |
+| 7 | Screens, responsive, accessibility | not started |
+| 8 | Test gaps, docs, ship | not started |
+
+## Running it
+
+```bash
+flutter pub get
+flutter run -d chrome          # web
+flutter run                    # attached device / emulator
+```
+
+## Checks
+
+```bash
+flutter analyze                # must be clean
+flutter test                   # unit + widget
+```
+
+## Layout
+
+```
+lib/
+  core/          theme tokens, canvas + animation constants, Result type
+  domain/        PURE DART - models and the simulation engine, no Flutter
+  data/          level definitions, reference functions, persistence
+  application/   Riverpod controllers (from Phase 3)
+  presentation/  screens, canvas, widgets, animations
+```
+
+Dependency direction is `presentation -> application -> data -> domain`, and
+`domain` imports nothing but Dart. A test enforces that.
+
+## The engine
+
+`domain/engine/` is a pure combinational simulator:
+
+- **Three-valued logic.** An unwired input port is `floating` (`X`), not a
+  silent `0`. A dominating value still wins: `AND(0, X)` is `0`, because no
+  value of the floating input could change the answer.
+- **Topological evaluation.** `Simulator.evaluate` sorts components so every
+  driver is computed before its consumers, and returns that order — the
+  signal-flow animation replays it so players watch computation propagate.
+- **Cycles are refused, not survived.** The MVP is combinational; a feedback
+  loop is reported with the offending wires rather than hanging.
+- **`WinChecker.check`** runs every input combination and returns a per-row
+  diff, so the tester can highlight exactly which rows fail.
+
+Every level's truth table is verified against an independent reference
+function, and every level has a stored reference solution that must solve it
+within par — a par that is quietly impossible fails the suite.
+
+## Docs
+
+The full specification (`CLAUDE.md`, `BUILD_PROMPT.md`, `DESIGN.md`) lives in
+`docs/`, which is intentionally untracked. Deviations from it are recorded in
+[DECISIONS.md](DECISIONS.md).

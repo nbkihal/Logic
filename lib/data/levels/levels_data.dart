@@ -1,0 +1,316 @@
+import '../../domain/models/gate_type.dart';
+import '../../domain/models/level.dart';
+import '../../domain/models/truth_table.dart';
+
+/// The optional tools offered from stage 6 onward: they widen the solution
+/// space and reward experimentation without being required by any target
+/// (CLAUDE.md §8). Withheld from the NAND-only stages, whose whole point is
+/// the restriction.
+const _extras = {
+  GateType.nor,
+  GateType.xnor,
+  GateType.buffer,
+  GateType.constant,
+};
+
+const _fullSet = {
+  GateType.not,
+  GateType.and,
+  GateType.or,
+  GateType.nand,
+  GateType.nor,
+  GateType.xor,
+  GateType.xnor,
+  GateType.buffer,
+  GateType.constant,
+};
+
+/// The 13 hand-designed stages, in play order.
+///
+/// Difficulty moves one lever at a time: a new gate, one more input, one more
+/// output, or a new challenge type. Every table here is verified against
+/// `ReferenceFunctions` by a unit test (CLAUDE.md §15).
+const List<Level> kLevels = [
+  Level(
+    id: 1,
+    name: 'Invert It',
+    blurb: 'One gate, one job: flip the signal.',
+    inputCount: 1,
+    outputCount: 1,
+    palette: {GateType.not},
+    par: 1,
+    target: TruthTable(
+      inputNames: ['A'],
+      outputNames: ['Q'],
+      rows: [
+        [true],
+        [false],
+      ],
+    ),
+  ),
+  Level(
+    id: 2,
+    name: 'Both On',
+    blurb: 'Light up only when both switches are on.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {GateType.and, GateType.not},
+    par: 1,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [false],
+        [false],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 3,
+    name: 'Either On',
+    blurb: 'One switch is enough this time.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {GateType.or, GateType.and, GateType.not},
+    par: 1,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [true],
+        [true],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 4,
+    name: 'Not Both',
+    blurb: 'Chain two gates: invert what AND says.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {GateType.and, GateType.not},
+    par: 2,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [true],
+        [true],
+        [true],
+        [false],
+      ],
+    ),
+  ),
+  Level(
+    id: 5,
+    name: 'Odd One Out',
+    blurb: 'Exactly one, never both — build XOR from scratch.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {GateType.and, GateType.or, GateType.not},
+    par: 5,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [true],
+        [true],
+        [false],
+      ],
+    ),
+  ),
+  Level(
+    id: 6,
+    name: 'Half Adder',
+    blurb: 'Add two bits: a sum and a carry.',
+    inputCount: 2,
+    outputCount: 2,
+    palette: {
+      GateType.and,
+      GateType.or,
+      GateType.not,
+      GateType.xor,
+      ..._extras,
+    },
+    par: 2,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['SUM', 'CARRY'],
+      rows: [
+        [false, false],
+        [true, false],
+        [true, false],
+        [false, true],
+      ],
+    ),
+  ),
+  Level(
+    id: 7,
+    name: 'Nothing But NAND',
+    blurb: 'One gate type can build them all. Start with AND.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {GateType.nand},
+    par: 2,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [false],
+        [false],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 8,
+    name: 'NAND Makes OR',
+    blurb: 'Still only NAND. Now make OR out of it.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {GateType.nand},
+    par: 3,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [true],
+        [true],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 9,
+    name: 'Black Box',
+    blurb: 'The table is hidden. Poke the inputs and work it out.',
+    inputCount: 2,
+    outputCount: 1,
+    palette: {
+      GateType.and,
+      GateType.or,
+      GateType.not,
+      GateType.xor,
+      ..._extras,
+    },
+    par: 2,
+    showTargetTable: false,
+    target: TruthTable(
+      inputNames: ['A', 'B'],
+      outputNames: ['Q'],
+      rows: [
+        [true],
+        [true],
+        [false],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 10,
+    name: 'Majority Rules',
+    blurb: 'Three votes in, the winning side out.',
+    inputCount: 3,
+    outputCount: 1,
+    palette: {GateType.and, GateType.or, GateType.not, ..._extras},
+    par: 4,
+    target: TruthTable(
+      inputNames: ['A', 'B', 'C'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [false],
+        [false],
+        [true],
+        [false],
+        [true],
+        [true],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 11,
+    name: 'Full Adder',
+    blurb: 'Two bits plus a carry-in. The heart of arithmetic.',
+    inputCount: 3,
+    outputCount: 2,
+    palette: _fullSet,
+    par: 5,
+    target: TruthTable(
+      inputNames: ['A', 'B', 'CIN'],
+      outputNames: ['SUM', 'CARRY'],
+      rows: [
+        [false, false],
+        [true, false],
+        [true, false],
+        [false, true],
+        [true, false],
+        [false, true],
+        [false, true],
+        [true, true],
+      ],
+    ),
+  ),
+  Level(
+    id: 12,
+    name: 'The Selector',
+    blurb: 'S picks the winner: pass A through, or pass B.',
+    inputCount: 3,
+    outputCount: 1,
+    palette: _fullSet,
+    par: 4,
+    target: TruthTable(
+      inputNames: ['A', 'B', 'S'],
+      outputNames: ['Q'],
+      rows: [
+        [false],
+        [false],
+        [false],
+        [true],
+        [true],
+        [false],
+        [true],
+        [true],
+      ],
+    ),
+  ),
+  Level(
+    id: 13,
+    name: 'Capstone: Compare',
+    blurb: 'Two 2-bit numbers in. Greater, equal, or less out.',
+    inputCount: 4,
+    outputCount: 3,
+    palette: _fullSet,
+    par: 9,
+    target: TruthTable(
+      inputNames: ['A1', 'A0', 'B1', 'B0'],
+      outputNames: ['A>B', 'A=B', 'A<B'],
+      rows: [
+        [false, true, false],
+        [false, false, true],
+        [false, false, true],
+        [false, false, true],
+        [true, false, false],
+        [false, true, false],
+        [false, false, true],
+        [false, false, true],
+        [true, false, false],
+        [true, false, false],
+        [false, true, false],
+        [false, false, true],
+        [true, false, false],
+        [true, false, false],
+        [true, false, false],
+        [false, true, false],
+      ],
+    ),
+  ),
+];
