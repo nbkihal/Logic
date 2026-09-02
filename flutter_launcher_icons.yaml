@@ -1,0 +1,18 @@
+# Regenerate the mark with `python tool/generate_icon.py`, then run
+# `dart run flutter_launcher_icons` to fan it out to every platform.
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+
+  android: "ic_launcher"
+  adaptive_icon_background: "#FC5000"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  min_sdk_android: 21
+
+  ios: true
+  remove_alpha_ios: true
+
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#E2E2DF"
+    theme_color: "#FC5000"

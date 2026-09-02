@@ -21,7 +21,7 @@ class _LogicCircuitBuilderAppState extends State<LogicCircuitBuilderApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Logic Circuit Builder',
+      title: 'Logic',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: _router,

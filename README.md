@@ -1,4 +1,4 @@
-# Logic Circuit Builder
+# Logic
 
 An educational Boolean-logic puzzle game. Drag logic gates onto a board, wire
 them together, and make the outputs match a target truth table — from a single
@@ -14,7 +14,7 @@ Built in phases, each behind a review gate.
 | --- | --- | --- |
 | 0 | Setup, theme tokens, routing shell | done |
 | 1 | Domain models + simulation engine (no UI) | done |
-| 2 | Static canvas rendering | not started |
+| 2 | Static canvas rendering | done |
 | 3 | Interaction: place, move, wire, delete, undo | not started |
 | 4 | Tester panel + win detection | not started |
 | 5 | Animation catalogue | not started |
@@ -35,6 +35,13 @@ flutter run                    # attached device / emulator
 ```bash
 flutter analyze                # must be clean
 flutter test                   # unit + widget
+```
+
+## Regenerating the app icon
+
+```bash
+python tool/generate_icon.py   # draws the NAND mark
+dart run flutter_launcher_icons # fans it out to Android / iOS / web
 ```
 
 ## Layout

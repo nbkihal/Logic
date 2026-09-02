@@ -29,16 +29,13 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     'LOGIC',
-                    style: wide ? text.displayLarge : text.headlineLarge,
-                  ),
-                  Text(
-                    'CIRCUIT',
-                    style: (wide ? text.displayLarge : text.headlineLarge)
+                    style: (wide ? text.displayLarge : text.displaySmall)
                         ?.copyWith(color: AppColors.ember),
                   ),
+                  const SizedBox(height: AppSpacing.x8),
                   Text(
-                    'BUILDER',
-                    style: wide ? text.displayLarge : text.headlineLarge,
+                    'CIRCUIT BUILDER',
+                    style: text.labelMedium?.copyWith(letterSpacing: 3),
                   ),
                   const SizedBox(height: AppSpacing.x24),
                   ConstrainedBox(

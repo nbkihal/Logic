@@ -10,12 +10,11 @@ import 'app_colors.dart';
 /// * [body] — DM Sans (variable), pinned to Medium (500). Never Regular,
 ///   never Bold.
 ///
-/// A monospace fallback carries pin labels, where character alignment matters
-/// more than brand presence.
+/// Canvas value glyphs reuse the body face with tabular figures, so digits
+/// keep a fixed advance without depending on a platform monospace family.
 abstract final class AppTypography {
   static const display = 'Anton';
   static const body = 'DMSans';
-  static const mono = 'monospace';
 
   /// DM Sans ships as a variable font; pin the weight axis to Medium.
   static const _medium = <FontVariation>[FontVariation('wght', 500)];
@@ -61,9 +60,17 @@ abstract final class AppTypography {
         labelSmall: _body(12, 1.2),
       );
 
-  /// Pin and port labels on the canvas.
+  /// Value glyphs and pin labels on the canvas.
+  ///
+  /// Tabular figures rather than a monospace *family*: `0`, `1` and `X` want
+  /// a fixed advance so they do not jitter as a value flips, but a bare
+  /// `monospace` family only resolves on some platforms and renders as tofu
+  /// on the rest.
   static const pinLabel = TextStyle(
-    fontFamily: mono,
+    fontFamily: body,
+    fontVariations: _medium,
+    fontWeight: FontWeight.w500,
+    fontFeatures: [FontFeature.tabularFigures()],
     fontSize: 12,
     height: 1.2,
     letterSpacing: 0.5,

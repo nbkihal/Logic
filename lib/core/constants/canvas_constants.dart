@@ -27,6 +27,23 @@ abstract final class CanvasConstants {
   /// Padding kept around content when fitting the view to the circuit.
   static const fitPadding = 64.0;
 
+  /// The board is a fixed logical world, wide enough for every level with
+  /// room to lay gates out loosely.
+  static const worldCellsWide = 32;
+  static const worldCellsHigh = 20;
+
+  /// Level fixtures are centred on grid row 0, so grid coordinates go
+  /// negative. This origin shifts the whole world into positive pixels.
+  static const originCellX = 1;
+  static const originCellY = 10;
+
+  static const worldWidth = worldCellsWide * gridCell;
+  static const worldHeight = worldCellsHigh * gridCell;
+
+  /// Component footprint in world pixels.
+  static const componentWidth = componentWidthCells * gridCell;
+  static const componentHeight = componentHeightCells * gridCell;
+
   /// Undo/redo history depth (CLAUDE.md §10).
   static const undoStackLimit = 50;
 }

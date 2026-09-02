@@ -67,6 +67,54 @@ detector peels the remainder down to nodes that actually sit on a cycle, so
 the amber highlight lands on the fault rather than on every component that
 happens to read a looping value.
 
+### Product name is "Logic"
+
+The working title was "Logic Circuit Builder". The shipped app name is
+**Logic** everywhere a user sees it — Android label, iOS bundle name, web
+title and manifest, and the `MaterialApp` title. "Circuit Builder" survives as
+a kicker under the wordmark on Home. The Dart package stays
+`logic_circuit_builder`; renaming it buys nothing and churns every import.
+
+### App icon is generated, not hand-drawn
+
+`tool/generate_icon.py` draws a NAND gate — body, inversion bubble, two input
+leads and an output lead with port dots — in Obsidian on Ember, and writes a
+full-bleed 1024px icon plus a transparent Android adaptive foreground inset to
+the safe zone. `flutter_launcher_icons.yaml` fans those out to Android, iOS
+and web. Change the mark by editing the script and re-running both steps;
+there is no binary to hand-edit.
+
+### Ports are drawn by the component widgets, not the painter
+
+Phase 2's file list puts ports in `circuit_painter.dart`, while §12 says
+components are widgets so they can host gestures and semantics. Ports live in
+`GateWidget`: they are what Phase 3 hit-tests for wiring, and they need their
+own semantics and enlarged touch targets. The painter draws the grid and the
+wires.
+
+### The board is a fixed world with an origin offset
+
+Level fixtures are centred on grid row 0, so grid coordinates go negative.
+`CanvasGeometry` maps grid to world pixels through a single origin offset
+(`CanvasConstants.originCellX/Y`), which keeps every component at positive
+world coordinates inside a fixed 32x20-cell board. One conversion, used by the
+painter, the component layer, and Phase 3's hit-testing alike.
+
+### Value glyphs use tabular figures, not a monospace family
+
+`0`, `1` and `X` want a fixed advance so they do not jitter when a value
+flips. A bare `monospace` family only resolves on some platforms and renders
+as tofu on the rest — it did, visibly, in the first render. The bundled body
+face with `FontFeature.tabularFigures()` gets the same result everywhere.
+
+### Pan and zoom use `InteractiveViewer`
+
+§12 asks for a single `Matrix4` with all hit-testing through its inverse.
+`InteractiveViewer` with a `TransformationController` *is* that matrix, and it
+gives correct child hit-testing for the component widgets for free. Screen-to-
+world conversion goes through `MatrixUtils.transformPoint` on the inverse, in
+one place.
+
 ### Display typeface
 
 `PP Neue Corp Compact` is not redistributable, so the spec's own substitute

@@ -22,8 +22,7 @@ void main() {
     await _pumpApp(tester);
 
     expect(find.text('LOGIC'), findsOneWidget);
-    expect(find.text('CIRCUIT'), findsOneWidget);
-    expect(find.text('BUILDER'), findsOneWidget);
+    expect(find.text('CIRCUIT BUILDER'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Play'), findsOneWidget);
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
@@ -40,7 +39,8 @@ void main() {
 
     await tester.tap(find.widgetWithText(FilledButton, 'Open level 1'));
     await tester.pumpAndSettle();
-    expect(find.text('LEVEL 1'), findsOneWidget);
+    // The game screen titles itself with the level's name, not its number.
+    expect(find.text('INVERT IT'), findsOneWidget);
 
     await tester.tap(find.widgetWithText(OutlinedButton, 'Back'));
     await tester.pumpAndSettle();

@@ -1,11 +1,11 @@
 {
-    "name": "logic_circuit_builder",
-    "short_name": "logic_circuit_builder",
+    "name": "Logic",
+    "short_name": "Logic",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#E2E2DF",
+    "theme_color": "#FC5000",
+    "description": "Build logic circuits until the lamps match the truth table.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
