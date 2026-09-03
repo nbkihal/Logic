@@ -17,8 +17,17 @@ class CircuitPainter extends CustomPainter {
     required this.simulation,
     required this.showGrid,
     required this.palette,
+    required this.pulse,
     this.selectedWireId,
   });
+
+  /// Where the travelling dots are along their wires, 0 to 1.
+  ///
+  /// One phase for the whole board rather than one per wire: the dots stay in
+  /// step, so a chain of gates reads as a single wave moving left to right
+  /// instead of a scatter of unrelated blips. Zero freezes them (reduced
+  /// motion), and the dots are drawn only on wires actually carrying a 1.
+  final double pulse;
 
   /// A painter has no `BuildContext`, so the active palette is handed in.
   final AppPalette palette;
@@ -77,6 +86,7 @@ class CircuitPainter extends CustomPainter {
           // reads from brightness as well as hue.
           canvas.drawPath(path, _paint(palette.bloom, width: 8));
           canvas.drawPath(path, _paint(palette.signalHigh));
+          _paintTravellingDot(canvas, path);
         case Logic.low:
           canvas.drawPath(path, _paint(palette.signalLow));
         case Logic.floating:
@@ -86,6 +96,21 @@ class CircuitPainter extends CustomPainter {
             _paint(palette.signalFloating, width: 2),
           );
       }
+    }
+  }
+
+  /// A dot riding the wire from driver to reader.
+  ///
+  /// This is the part that teaches: a `1` is not a colour the wire happens to
+  /// be, it is a value arriving from somewhere (CLAUDE.md §13.1).
+  void _paintTravellingDot(Canvas canvas, Path path) {
+    if (pulse <= 0) return;
+    for (final metric in path.computeMetrics()) {
+      final at = metric.getTangentForOffset(metric.length * pulse)?.position;
+      if (at == null) continue;
+      canvas
+        ..drawCircle(at, 7, Paint()..color = palette.bloom)
+        ..drawCircle(at, 3.5, Paint()..color = palette.signalHigh);
     }
   }
 
@@ -117,6 +142,7 @@ class CircuitPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CircuitPainter old) =>
+      old.pulse != pulse ||
       old.palette != palette ||
       old.showGrid != showGrid ||
       old.selectedWireId != selectedWireId ||

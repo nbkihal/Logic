@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logic_circuit_builder/core/theme/app_colors.dart';
 import 'package:logic_circuit_builder/data/persistence/progress_model.dart';
 import 'package:logic_circuit_builder/data/persistence/progress_store.dart';
 
@@ -96,6 +97,15 @@ void main() {
       expect(restored.settings.animationSpeed, 1.5);
       expect(restored.settings.reducedMotion, isTrue);
       expect(restored.settings.soundEnabled, isFalse);
+    });
+
+    test('the chosen theme survives a round trip', () {
+      const settings = GameSettings(themeId: 'midnight');
+      final decoded = GameSettings.fromJson(settings.toJson());
+      expect(decoded.themeId, 'midnight');
+      // An unknown id from an older or newer build never breaks the app.
+      expect(AppPalette.byId('no-such-theme'), AppPalette.caldera);
+      expect(AppPalette.byId('midnight').isDark, isTrue);
     });
 
     test('a fresh profile decodes from nothing', () {

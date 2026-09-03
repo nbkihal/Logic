@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/animation_constants.dart';
 import '../../core/constants/canvas_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -197,16 +198,23 @@ class _GateBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: context.colors.limestone,
-        borderRadius: BorderRadius.circular(AppRadii.small),
-        border: Border.all(
-          color: value.isHigh ? context.colors.ember : context.colors.obsidian,
-          width: 1.5,
+    return ValuePulse(
+      value: value,
+      child: AnimatedContainer(
+        duration: AnimationConstants.gateFire,
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: value.isHigh
+              ? Color.lerp(context.colors.limestone, context.colors.ember, 0.18)
+              : context.colors.limestone,
+          borderRadius: BorderRadius.circular(AppRadii.small),
+          border: Border.all(
+            color:
+                value.isHigh ? context.colors.ember : context.colors.obsidian,
+            width: value.isHigh ? 2.5 : 1.5,
+          ),
         ),
-      ),
-      child: Column(
+        child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
@@ -214,11 +222,65 @@ class _GateBody extends StatelessWidget {
             style: AppTypography.textTheme.labelMedium,
             textAlign: TextAlign.center,
           ),
-          // Gates carry their glyph too, so a gate's output value never
-          // depends on the border colour alone (CLAUDE.md §16).
-          Text(value.glyph, style: AppTypography.pinLabel),
-        ],
+            // Gates carry their glyph too, so a gate's output value never
+            // depends on the border colour alone (CLAUDE.md §16).
+            Text(value.glyph, style: AppTypography.pinLabel),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+/// A quick swell when [value] rises to high, and nothing at all otherwise.
+///
+/// This is the "gate fire" beat from the animation catalogue: the moment a
+/// gate starts asserting a 1 is the moment worth pointing at, and it reads
+/// even when the gate is one of twenty on the board.
+class ValuePulse extends StatefulWidget {
+  const ValuePulse({super.key, required this.value, required this.child});
+
+  final Logic value;
+  final Widget child;
+
+  @override
+  State<ValuePulse> createState() => _ValuePulseState();
+}
+
+class _ValuePulseState extends State<ValuePulse>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fire = AnimationController(
+    vsync: this,
+    duration: AnimationConstants.gateFire,
+  );
+
+  @override
+  void didUpdateWidget(ValuePulse old) {
+    super.didUpdateWidget(old);
+    if (widget.value.isHigh && !old.value.isHigh) {
+      _fire.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _fire.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _fire,
+      builder: (context, child) {
+        // Out and back within the one controller: 0 -> 1 -> 0 on scale.
+        final t = _fire.value == 0 ? 0.0 : (1 - (_fire.value * 2 - 1).abs());
+        return Transform.scale(
+          scale: 1 + Curves.easeOut.transform(t) * 0.06,
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 }
@@ -233,7 +295,9 @@ class _PinBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final high = value.isHigh;
-    return DecoratedBox(
+    return AnimatedContainer(
+      duration: AnimationConstants.toggleSwitch,
+      curve: Curves.easeInOut,
       decoration: BoxDecoration(
         color: high ? context.colors.ember : context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.pill),
@@ -267,20 +331,26 @@ class _LampBody extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        DecoratedBox(
+        AnimatedContainer(
+          duration: high
+              ? AnimationConstants.lampGlowIn
+              : AnimationConstants.lampGlowOut,
+          curve: Curves.easeOut,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: high ? context.colors.ember : context.colors.limestone,
             border: Border.all(color: context.colors.obsidian, width: 1.5),
-            boxShadow: high
-                ? [
-                    BoxShadow(
-                      color: context.colors.bloom,
-                      blurRadius: 16,
-                      spreadRadius: 2,
-                    ),
-                  ]
-                : null,
+            boxShadow: [
+              // Always present, so the halo grows and fades rather than
+              // appearing from nothing.
+              BoxShadow(
+                color: high
+                    ? context.colors.bloom
+                    : context.colors.bloom.withValues(alpha: 0),
+                blurRadius: high ? 20 : 0,
+                spreadRadius: high ? 3 : 0,
+              ),
+            ],
           ),
           child: SizedBox(
             width: 34,

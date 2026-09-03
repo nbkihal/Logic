@@ -98,5 +98,5 @@ class RunController extends Notifier<RunState> {
 
 final runProvider = NotifierProvider<RunController, RunState>(
   RunController.new,
-  dependencies: [levelIdProvider, circuitControllerProvider],
+  dependencies: [levelIdProvider, levelProvider, circuitControllerProvider],
 );

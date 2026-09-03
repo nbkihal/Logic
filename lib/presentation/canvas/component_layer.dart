@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/animation_constants.dart';
 import '../../domain/models/circuit.dart';
 import '../../domain/models/gate_type.dart';
 import '../../domain/models/logic.dart';
@@ -54,19 +55,24 @@ class ComponentLayer extends StatelessWidget {
             // from the component's own bounds by that inset.
             left: CanvasGeometry.boundsOf(component).left - GateWidget.inset,
             top: CanvasGeometry.boundsOf(component).top - GateWidget.inset,
-            child: GateWidget(
-              key: ValueKey(component.id),
-              component: component,
-              valueAt: valueAt,
-              label: labels[component.id],
-              selected: component.id == selectedComponentId,
-              wiringSource: wiringSource,
-              onTap: () => onComponentTap?.call(component.id),
-              onPortTap: onPortTap,
-              onMoveStart: () => onMoveStart?.call(component.id),
-              onMoveUpdate: (global) =>
-                  onMoveUpdate?.call(component.id, global),
-              onMoveEnd: onMoveEnd,
+            // A newly placed component springs in; one already on the board
+            // keeps its identity through the ValueKey and does not replay it.
+            child: SpringIn(
+              key: ValueKey('spring-${component.id}'),
+              child: GateWidget(
+                key: ValueKey(component.id),
+                component: component,
+                valueAt: valueAt,
+                label: labels[component.id],
+                selected: component.id == selectedComponentId,
+                wiringSource: wiringSource,
+                onTap: () => onComponentTap?.call(component.id),
+                onPortTap: onPortTap,
+                onMoveStart: () => onMoveStart?.call(component.id),
+                onMoveUpdate: (global) =>
+                    onMoveUpdate?.call(component.id, global),
+                onMoveEnd: onMoveEnd,
+              ),
             ),
           ),
       ],
@@ -100,4 +106,45 @@ class ComponentLayer extends StatelessWidget {
   /// A, B, C, ... for pins the level did not name.
   static String _positional(int index) =>
       String.fromCharCode('A'.codeUnitAt(0) + index);
+}
+
+/// Scales its child in with a little overshoot, once, when it first appears.
+///
+/// Dropping a gate should feel like putting something down rather than like
+/// a list gaining a row — the overshoot is what sells the weight
+/// (CLAUDE.md §13.1).
+class SpringIn extends StatefulWidget {
+  const SpringIn({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<SpringIn> createState() => _SpringInState();
+}
+
+class _SpringInState extends State<SpringIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _place = AnimationController(
+    vsync: this,
+    duration: AnimationConstants.springPlace,
+  )..forward();
+
+  late final Animation<double> _scale = CurvedAnimation(
+    parent: _place,
+    curve: Curves.elasticOut,
+  );
+
+  @override
+  void dispose() {
+    _place.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ScaleTransition(
+        // Starts at 0.6 rather than 0 so a component is never invisible, even
+        // for a frame, to a screen reader or a screenshot.
+        scale: Tween<double>(begin: 0.6, end: 1).animate(_scale),
+        child: widget.child,
+      );
 }

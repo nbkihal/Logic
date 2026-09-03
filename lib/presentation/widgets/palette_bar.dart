@@ -174,6 +174,7 @@ class _DeleteButton extends ConsumerWidget {
       child: IconButton(
         onPressed: enabled
             ? () {
+                ref.read(soundProvider).play(Sfx.delete);
                 final circuit =
                     ref.read(circuitControllerProvider.notifier);
                 final wireId = board.selectedWireId;

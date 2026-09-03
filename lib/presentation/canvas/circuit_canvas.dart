@@ -5,11 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/board_controller.dart';
 import '../../application/circuit_controller.dart';
+import '../../application/progress_controller.dart';
 import '../../application/simulation_provider.dart';
+import '../../application/sound_controller.dart';
+import '../../core/constants/animation_constants.dart';
 import '../../core/constants/canvas_constants.dart';
+import '../../core/motion.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../domain/engine/simulator.dart';
 import '../../domain/models/gate_type.dart';
+import '../../domain/models/logic.dart';
 import '../../domain/models/port.dart';
 import 'canvas_geometry.dart';
 import 'circuit_painter.dart';
@@ -36,9 +42,20 @@ class CircuitCanvas extends ConsumerStatefulWidget {
   ConsumerState<CircuitCanvas> createState() => _CircuitCanvasState();
 }
 
-class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
+class _CircuitCanvasState extends ConsumerState<CircuitCanvas>
+    with SingleTickerProviderStateMixin {
   final _transform = TransformationController();
   final _worldKey = GlobalKey();
+
+  /// Drives the dots travelling along energised wires.
+  ///
+  /// One controller for the whole board, and it only ticks while at least one
+  /// wire is carrying a 1 — an idle board repaints nothing, which is the
+  /// §12 rule about not running at 60fps for a still picture.
+  late final AnimationController _flow = AnimationController(
+    vsync: this,
+    duration: AnimationConstants.signalHop,
+  );
 
   /// The viewport the board was last framed for. Tracking the size rather
   /// than a one-shot flag means a layout that settles late — or a rotation —
@@ -51,8 +68,20 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
   @override
   void dispose() {
+    _flow.dispose();
     _transform.dispose();
     super.dispose();
+  }
+
+  /// Starts or stops the flow loop to match what the board is doing.
+  void _syncFlow({required bool anyLive, required Motion motion}) {
+    final shouldRun = anyLive && motion.enabled;
+    if (shouldRun && !_flow.isAnimating) {
+      _flow.duration = motion(AnimationConstants.signalHop);
+      _flow.repeat();
+    } else if (!shouldRun && _flow.isAnimating) {
+      _flow.stop();
+    }
   }
 
   CircuitController get _circuit =>
@@ -67,6 +96,10 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
     final simulation = ref.watch(simulationProvider);
     final board = ref.watch(boardControllerProvider);
     final armed = board.armed != null;
+    _syncFlow(
+      anyLive: _anyLive(simulation),
+      motion: motionOf(context, ref),
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -107,13 +140,22 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
                         clipBehavior: Clip.none,
                         children: [
                           Positioned.fill(
-                            child: CustomPaint(
-                              painter: CircuitPainter(
-                                circuit: circuit,
-                                simulation: simulation,
-                                showGrid: true,
-                                palette: context.colors,
-                                selectedWireId: board.selectedWireId,
+                            // Repaints on every flow tick, and only then:
+                            // everything else on the board is a widget that
+                            // rebuilds on its own state.
+                            child: RepaintBoundary(
+                              child: AnimatedBuilder(
+                                animation: _flow,
+                                builder: (context, _) => CustomPaint(
+                                  painter: CircuitPainter(
+                                    circuit: circuit,
+                                    simulation: simulation,
+                                    showGrid: true,
+                                    palette: context.colors,
+                                    pulse: _flow.value,
+                                    selectedWireId: board.selectedWireId,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -161,6 +203,13 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
     );
   }
 
+  SoundController get _sound => ref.read(soundProvider);
+
+  /// True when anything on the board is carrying a 1 worth animating.
+  bool _anyLive(SimulationResult simulation) =>
+      simulation.cycle == null &&
+      simulation.portValues.values.any((v) => v == Logic.high);
+
   // --- Gestures -------------------------------------------------------
 
   void _onComponentTap(String id) {
@@ -171,10 +220,12 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
     // An input pin is a switch first and an object second: tapping it flips
     // it rather than selecting it.
     if (component.type == GateType.input) {
+      _sound.play(Sfx.toggle);
       _circuit.toggleInput(id);
       _board.clearSelection();
       return;
     }
+    _sound.play(Sfx.tap);
     _board.selectComponent(id);
   }
 
@@ -184,6 +235,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
     if (source == null) {
       if (port.isOutput) {
+        _sound.play(Sfx.tap);
         _board.beginWiring(port);
         return;
       }
@@ -191,8 +243,10 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
       final wire =
           ref.read(circuitControllerProvider).wiresInto(port.id);
       if (wire != null) {
+        _sound.play(Sfx.tap);
         _board.selectWire(wire.id);
       } else {
+        _sound.play(Sfx.nope);
         _board.nudge('Start from an output dot on the right of a gate.');
       }
       return;
@@ -200,16 +254,20 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
     // Tapping another output retargets; tapping the same one cancels.
     if (port.isOutput) {
+      _sound.play(Sfx.tap);
       _board.beginWiring(port);
       return;
     }
 
     switch (_circuit.addWire(source, port)) {
       case WireOutcome.connected:
+        _sound.play(Sfx.wire);
         _board.cancelWiring();
       case WireOutcome.inputOccupied:
+        _sound.play(Sfx.nope);
         _board.nudge('That input already has a wire. Tap the wire to cut it.');
       case WireOutcome.invalid:
+        _sound.play(Sfx.nope);
         _board.nudge('Those two cannot be joined.');
     }
   }
@@ -227,6 +285,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
     final wireId = CanvasGeometry.wireIdAt(circuit, worldPoint);
     if (wireId != null) {
+      _sound.play(Sfx.tap);
       _board.selectWire(wireId);
       return;
     }
@@ -241,10 +300,13 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
         constantValue: true,
       )) {
         case PlaceOutcome.placed:
+          _sound.play(Sfx.place);
           _board.disarm();
         case PlaceOutcome.occupied:
+          _sound.play(Sfx.nope);
           _board.nudge('Not enough room there — try an emptier spot.');
         case PlaceOutcome.gateLimitReached:
+          _sound.play(Sfx.nope);
           _board.nudge('This level caps how many gates you can place.');
       }
       return;
