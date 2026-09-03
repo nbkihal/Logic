@@ -71,8 +71,8 @@ class LogicSynthesizer {
   /// The cheapest expression found for [f], in the ideal {NOT, AND, OR, XOR}
   /// basis. Cost is measured *after* lowering, so the search already knows
   /// that e.g. an XOR is expensive on a NAND-only board.
-  _Node _best(int f) {
-    final cached = _bestCache[f];
+  _Node _best(int f, [int budget = 2]) {
+    final cached = _bestCache[f * 8 + budget];
     if (cached != null) return cached;
 
     if (f == 0) return _Node.konst(false);
@@ -95,34 +95,52 @@ class LogicSynthesizer {
 
       // f = xi XOR g: flipping xi always flips the output.
       if (low == (~high & _full)) {
-        candidates.add(_Node.xor(_Node.input(i), _best(low)));
+        candidates.add(_Node.xor(_Node.input(i), _best(low, budget)));
       }
       // f = xi AND g, NOT xi AND g, xi OR g, NOT xi OR g.
-      if (f & nv == 0) candidates.add(_Node.and(_Node.input(i), _best(high)));
-      if (f & v == 0) {
-        candidates.add(_Node.and(_Node.not(_Node.input(i)), _best(low)));
+      if (f & nv == 0) {
+        candidates.add(_Node.and(_Node.input(i), _best(high, budget)));
       }
-      if (f & v == v) candidates.add(_Node.or(_Node.input(i), _best(low)));
+      if (f & v == 0) {
+        candidates.add(_Node.and(_Node.not(_Node.input(i)), _best(low, budget)));
+      }
+      if (f & v == v) candidates.add(_Node.or(_Node.input(i), _best(low, budget)));
       if (f & nv == nv) {
-        candidates.add(_Node.or(_Node.not(_Node.input(i)), _best(high)));
+        candidates.add(_Node.or(_Node.not(_Node.input(i)), _best(high, budget)));
       }
 
       // Factored splits. When one cofactor implies the other, the mux
       // collapses and the shared part is built once — this is what turns
       // AB + AC + BC into AB + C(A+B).
       if (low & ~high & _full == 0) {
-        final g = _best(high);
-        final h = _best(low);
+        final g = _best(high, budget);
+        final h = _best(low, budget);
         candidates
           ..add(_Node.or(_Node.and(_Node.input(i), g), h))
           ..add(_Node.and(_Node.or(_Node.input(i), h), g));
       }
       if (high & ~low & _full == 0) {
-        final g = _best(low);
-        final h = _best(high);
+        final g = _best(low, budget);
+        final h = _best(high, budget);
         candidates
           ..add(_Node.or(_Node.and(_Node.not(_Node.input(i)), g), h))
           ..add(_Node.and(_Node.or(_Node.not(_Node.input(i)), h), g));
+      }
+    }
+
+    // Peel a cheap term off with XOR and see whether what is left is
+    // simpler. This is what finds a multiplier bit as `A1B1 XOR carry`
+    // instead of spelling the whole thing out as a sum of products.
+    if (budget > 0) {
+      for (final term in _library) {
+        final residue = f ^ term.mask;
+        if (residue == 0) {
+          candidates.add(term.node);
+        } else if (residue == _full) {
+          candidates.add(_Node.not(term.node));
+        } else {
+          candidates.add(_Node.xor(term.node, _best(residue, budget - 1)));
+        }
       }
     }
 
@@ -130,7 +148,7 @@ class LogicSynthesizer {
 
     final complement = ~f & _full;
     if (!_inProgress.contains(complement)) {
-      candidates.add(_Node.not(_best(complement)));
+      candidates.add(_Node.not(_best(complement, budget)));
     }
 
     _inProgress.remove(f);
@@ -144,7 +162,34 @@ class LogicSynthesizer {
         bestCost = cost;
       }
     }
-    return _bestCache[f] = best;
+    return _bestCache[f * 8 + budget] = best;
+  }
+
+  /// Cheap two-literal terms, the building blocks a residue is peeled against.
+  late final List<_Term> _library = _buildLibrary();
+
+  List<_Term> _buildLibrary() {
+    final literals = <_Term>[];
+    for (var i = 0; i < inputCount; i++) {
+      literals
+        ..add(_Term(_varMask(i), _Node.input(i)))
+        ..add(_Term(~_varMask(i) & _full, _Node.not(_Node.input(i))));
+    }
+
+    final terms = [...literals];
+    for (var a = 0; a < literals.length; a++) {
+      for (var b = a + 1; b < literals.length; b++) {
+        final x = literals[a];
+        final y = literals[b];
+        // Skip a literal paired with its own complement: the result is a
+        // constant, never a useful term.
+        if (x.mask == (~y.mask & _full)) continue;
+        terms
+          ..add(_Term(x.mask & y.mask, _Node.and(x.node, y.node)))
+          ..add(_Term(x.mask | y.mask, _Node.or(x.node, y.node)));
+      }
+    }
+    return terms;
   }
 
   /// [f] with input [i] pinned high or low, as a function that ignores [i].
@@ -286,7 +331,11 @@ class LogicSynthesizer {
 
   _Node _lowerNot(_Node x) {
     // Two inversions in a row cancel — the cheapest gate is the one you skip.
-    if (x.kind == _Kind.not) return x.a!;
+    // The inverter may already be wearing a disguise: on a NAND-only board
+    // every NOT is a NAND with both inputs tied together, and inverting that
+    // again would build two gates to get back where we started.
+    final undone = _inverterInput(x);
+    if (undone != null) return undone;
     if (palette.contains(GateType.not)) return _Node.gate(_Kind.not, x);
     if (palette.contains(GateType.nand)) return _Node.gate(_Kind.nand, x, x);
     if (palette.contains(GateType.nor)) return _Node.gate(_Kind.nor, x, x);
@@ -298,6 +347,35 @@ class LogicSynthesizer {
       return _Node.gate(_Kind.xor, x, _Node.konst(true));
     }
     throw StateError('palette $palette cannot invert');
+  }
+
+  /// If [x] is itself an inverter, the signal it inverts.
+  _Node? _inverterInput(_Node x) {
+    switch (x.kind) {
+      case _Kind.not:
+        return x.a;
+      case _Kind.nand:
+      case _Kind.nor:
+        // NAND(y, y) and NOR(y, y) are both NOT y.
+        return x.a!.key == x.b!.key ? x.a : null;
+      case _Kind.xnor:
+        return _otherIfConstant(x, false);
+      case _Kind.xor:
+        return _otherIfConstant(x, true);
+      default:
+        return null;
+    }
+  }
+
+  /// The non-constant operand of [x], when the other one is the constant
+  /// [value] — the shape that makes XNOR(y, 0) and XOR(y, 1) inverters.
+  _Node? _otherIfConstant(_Node x, bool value) {
+    final a = x.a!;
+    final b = x.b;
+    if (b == null) return null;
+    if (a.kind == _Kind.konst && a.value == value) return b;
+    if (b.kind == _Kind.konst && b.value == value) return a;
+    return null;
   }
 
   _Node _lowerAnd(_Node a, _Node b) {
@@ -524,6 +602,14 @@ class _Node {
 
   @override
   String toString() => key;
+}
+
+/// A library entry: a cheap expression and the function it computes.
+class _Term {
+  const _Term(this.mask, this.node);
+
+  final int mask;
+  final _Node node;
 }
 
 /// A cube of the Boolean space: [bits] holds the fixed literal values and

@@ -1,16 +1,28 @@
 import 'package:logic_circuit_builder/data/levels/levels_data.dart';
 import 'package:logic_circuit_builder/domain/models/circuit.dart';
 import 'package:logic_circuit_builder/domain/models/gate_type.dart';
+import 'package:logic_circuit_builder/domain/models/level.dart';
 
 import 'circuit_builder.dart';
+import 'synthesis.dart';
 
 /// A known-good solution for every level.
 ///
 /// These back the §15 guardrails: each one must satisfy `isSolved`, use only
 /// gates from its level's palette, and come in at or under par — which is how
 /// a par that is quietly impossible gets caught before a player meets it.
+///
+/// Most stages are covered by [LogicSynthesizer], which is also what sets
+/// their par, so the two can never drift apart. A level appears in [_builders]
+/// only when a person can do better than the synthesizer and the par was
+/// tightened to match.
 abstract final class ReferenceSolutions {
-  static Circuit forLevel(int id) => _builders[id]!();
+  static Circuit forLevel(int id) {
+    final built = _builders[id];
+    if (built != null) return built();
+    final level = kLevels.firstWhere((l) => l.id == id);
+    return LogicSynthesizer.forLevel(level).circuitFor(level);
+  }
 
   static const Map<int, Circuit Function()> _builders = {
     1: _invert,
@@ -26,10 +38,14 @@ abstract final class ReferenceSolutions {
     11: _fullAdder,
     12: _selector,
     13: _compare2Bit,
+    18: _xorFromNand,
+    52: _orFromRingSum,
   };
 
   static CircuitBuilder _builderFor(int levelId) =>
-      CircuitBuilder.forLevel(kLevels.firstWhere((l) => l.id == levelId));
+      CircuitBuilder.forLevel(_level(levelId));
+
+  static Level _level(int id) => kLevels.firstWhere((l) => l.id == id);
 
   /// Level 1 — NOT A.
   static Circuit _invert() {
@@ -258,6 +274,45 @@ abstract final class ReferenceSolutions {
       ..wire(gt.out, b.lamp(0))
       ..wire(eq.out, b.lamp(1))
       ..wire(lt.out, b.lamp(2));
+    return b.build();
+  }
+  /// Level 18 — XOR from four NANDs, one fewer than the NOR version.
+  ///
+  /// `t = NAND(A, B)` is reused by both middle gates, which is the whole
+  /// trick: `Q = NAND(NAND(A, t), NAND(B, t))`.
+  static Circuit _xorFromNand() {
+    final b = _builderFor(18);
+    final t = b.gate(GateType.nand);
+    final left = b.gate(GateType.nand);
+    final right = b.gate(GateType.nand);
+    final join = b.gate(GateType.nand);
+    b
+      ..wire(b.input(0), t.at(0))
+      ..wire(b.input(1), t.at(1))
+      ..wire(b.input(0), left.at(0))
+      ..wire(t.out, left.at(1))
+      ..wire(b.input(1), right.at(0))
+      ..wire(t.out, right.at(1))
+      ..wire(left.out, join.at(0))
+      ..wire(right.out, join.at(1))
+      ..wire(join.out, b.lamp(0));
+    return b.build();
+  }
+
+  /// Level 52 — OR out of the ring-sum basis: `A + B = A XOR B XOR AB`.
+  static Circuit _orFromRingSum() {
+    final b = _builderFor(52);
+    final sum = b.gate(GateType.xor);
+    final both = b.gate(GateType.and);
+    final join = b.gate(GateType.xor);
+    b
+      ..wire(b.input(0), sum.at(0))
+      ..wire(b.input(1), sum.at(1))
+      ..wire(b.input(0), both.at(0))
+      ..wire(b.input(1), both.at(1))
+      ..wire(sum.out, join.at(0))
+      ..wire(both.out, join.at(1))
+      ..wire(join.out, b.lamp(0));
     return b.build();
   }
 }
