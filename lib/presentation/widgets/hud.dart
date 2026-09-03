@@ -8,7 +8,6 @@ import '../../application/simulation_provider.dart';
 import '../../application/sound_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_typography.dart';
 import '../../domain/models/level.dart';
 
 /// Gate count against par, the history controls, and reset.
@@ -26,6 +25,10 @@ class Hud extends ConsumerWidget {
     ref.watch(circuitControllerProvider);
 
     final overPar = gates > level.par;
+    // Under par the pill is Sulfur, over it it is a plain card — so the ink
+    // has to follow the fill, not the page.
+    final pillInk =
+        overPar ? context.colors.obsidian : context.colors.onSulfur;
 
     return Row(
       children: [
@@ -44,7 +47,10 @@ class Hud extends ConsumerWidget {
             excludeSemantics: true,
             child: Text(
               '$gates / ${level.par}',
-              style: AppTypography.textTheme.labelMedium,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(color: pillInk),
             ),
           ),
         ),

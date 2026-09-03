@@ -95,7 +95,7 @@ class _Table extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final table = level.target;
-    const style = AppTypography.pinLabel;
+    final style = pinLabelOf(context);
     // Later stages run to four inputs and four outputs, i.e. twelve columns.
     // Rather than squeeze those into a phone width until the digits are
     // unreadable, hold a floor per column and let the table scroll sideways.
@@ -112,7 +112,7 @@ class _Table extends StatelessWidget {
               ...table.outputNames.map((name) => 'want $name'),
               ...table.outputNames.map((name) => 'got $name'),
             ],
-            style: AppTypography.textTheme.labelSmall!,
+            style: Theme.of(context).textTheme.labelSmall!,
             background: context.colors.pumice,
           ),
           for (var i = 0; i < table.rowCount; i++)

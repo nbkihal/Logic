@@ -217,14 +217,14 @@ class _GateBody extends StatelessWidget {
         child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            type.label,
-            style: AppTypography.textTheme.labelMedium,
-            textAlign: TextAlign.center,
-          ),
+            Text(
+              type.label,
+              style: Theme.of(context).textTheme.labelMedium,
+              textAlign: TextAlign.center,
+            ),
             // Gates carry their glyph too, so a gate's output value never
             // depends on the border colour alone (CLAUDE.md §16).
-            Text(value.glyph, style: AppTypography.pinLabel),
+            Text(value.glyph, style: pinLabelOf(context)),
           ],
         ),
       ),
@@ -295,6 +295,7 @@ class _PinBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final high = value.isHigh;
+    final ink = high ? context.colors.onEmber : context.colors.obsidian;
     return AnimatedContainer(
       duration: AnimationConstants.toggleSwitch,
       curve: Curves.easeInOut,
@@ -307,9 +308,15 @@ class _PinBody extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(label, style: AppTypography.textTheme.labelMedium),
+            Text(
+              label,
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(color: ink),
+            ),
             const SizedBox(width: AppSpacing.x4),
-            Text(value.glyph, style: AppTypography.pinLabel),
+            Text(value.glyph, style: pinLabelOf(context, on: ink)),
           ],
         ),
       ),
@@ -356,7 +363,13 @@ class _LampBody extends StatelessWidget {
             width: 34,
             height: 34,
             child: Center(
-              child: Text(value.glyph, style: AppTypography.pinLabel),
+              child: Text(
+                value.glyph,
+                style: pinLabelOf(
+                  context,
+                  on: high ? context.colors.onEmber : context.colors.obsidian,
+                ),
+              ),
             ),
           ),
         ),
@@ -364,7 +377,7 @@ class _LampBody extends StatelessWidget {
         Flexible(
           child: Text(
             label,
-            style: AppTypography.textTheme.labelSmall,
+            style: Theme.of(context).textTheme.labelSmall,
             overflow: TextOverflow.ellipsis,
           ),
         ),

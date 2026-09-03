@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logic_circuit_builder/application/circuit_controller.dart';
 import 'package:logic_circuit_builder/application/level_scope.dart';

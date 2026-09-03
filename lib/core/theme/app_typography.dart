@@ -82,3 +82,11 @@ abstract final class AppTypography {
     // active palette without every call site restating it.
   );
 }
+
+/// The monospace pin/table face, in the active palette's ink.
+///
+/// [AppTypography.pinLabel] deliberately carries no colour so it inherits;
+/// this is where a widget says what it should inherit *from*. Pass [on] for
+/// a label that sits on an accent fill rather than on a page surface.
+TextStyle pinLabelOf(BuildContext context, {Color? on}) =>
+    AppTypography.pinLabel.copyWith(color: on ?? context.colors.obsidian);

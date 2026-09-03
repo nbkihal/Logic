@@ -7,7 +7,6 @@ import '../../application/simulation_provider.dart';
 import '../../application/sound_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_typography.dart';
 import '../../domain/models/gate_type.dart';
 
 /// The level's available components, plus the delete affordance.
@@ -113,6 +112,11 @@ class _PaletteChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final label = type == GateType.constant ? '1' : type.label;
+    final ink = armed
+        ? colors.onEmber
+        : suggested
+            ? colors.onSulfur
+            : colors.obsidian;
 
     return Semantics(
       button: true,
@@ -143,11 +147,13 @@ class _PaletteChip extends StatelessWidget {
             child: Center(
               child: Text(
                 label,
-                style: AppTypography.textTheme.labelMedium?.copyWith(
-                  decoration:
-                      ruledOut && !armed ? TextDecoration.lineThrough : null,
-                  decorationThickness: 2,
-                ),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: ink,
+                      decoration: ruledOut && !armed
+                          ? TextDecoration.lineThrough
+                          : null,
+                      decorationThickness: 2,
+                    ),
               ),
             ),
           ),
@@ -193,6 +199,8 @@ class _DeleteButton extends ConsumerWidget {
         style: IconButton.styleFrom(
           backgroundColor:
               enabled ? context.colors.sulfur : context.colors.limestone,
+          // Enabled it sits on Sulfur, disabled on a card: two fills, two inks.
+          foregroundColor: context.colors.onSulfur,
           disabledForegroundColor: context.colors.obsidianFaint,
           side: BorderSide(
             color: enabled ? context.colors.obsidian : context.colors.hairline,

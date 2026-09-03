@@ -18,9 +18,9 @@ abstract final class AppTheme {
     final scheme = ColorScheme(
       brightness: palette.brightness,
       primary: palette.ember,
-      onPrimary: palette.obsidian,
+      onPrimary: palette.onEmber,
       secondary: palette.sulfur,
-      onSecondary: palette.obsidian,
+      onSecondary: palette.onSulfur,
       tertiary: palette.plasmaViolet,
       onTertiary: palette.chalk,
       error: palette.ember,
@@ -65,7 +65,7 @@ abstract final class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: palette.ember,
-          foregroundColor: palette.obsidian,
+          foregroundColor: palette.onEmber,
           elevation: 0,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.x24,
@@ -120,7 +120,7 @@ abstract final class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: palette.sulfur,
         side: BorderSide.none,
-        labelStyle: AppTypography.textTheme.labelSmall,
+        labelStyle: AppTypography.textThemeFor(palette.onSulfur).labelSmall,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.x12,
           vertical: AppSpacing.x4,

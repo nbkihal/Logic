@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logic_circuit_builder/core/theme/app_colors.dart';
 import 'package:logic_circuit_builder/data/persistence/progress_model.dart';
@@ -106,6 +107,22 @@ void main() {
       // An unknown id from an older or newer build never breaks the app.
       expect(AppPalette.byId('no-such-theme'), AppPalette.caldera);
       expect(AppPalette.byId('midnight').isDark, isTrue);
+
+      // A fresh profile follows the phone; a chosen palette does not.
+      expect(const GameSettings().themeId, AppPalette.autoId);
+      expect(
+        AppPalette.resolve(AppPalette.autoId, Brightness.dark),
+        AppPalette.midnight,
+      );
+      expect(
+        AppPalette.resolve(AppPalette.autoId, Brightness.light),
+        AppPalette.caldera,
+      );
+      expect(
+        AppPalette.resolve('orchard', Brightness.dark),
+        AppPalette.orchard,
+        reason: 'an explicit choice must survive the phone going dark',
+      );
     });
 
     test('a fresh profile decodes from nothing', () {

@@ -226,12 +226,12 @@ class _PrimaryActionState extends ConsumerState<PrimaryAction>
               children: [
                 Text(
                   widget.label.toUpperCase(),
-                  style: text.headlineMedium?.copyWith(color: colors.obsidian),
+                  style: text.headlineMedium?.copyWith(color: colors.onEmber),
                 ),
                 Text(
                   widget.caption,
                   style: text.labelSmall?.copyWith(
-                    color: colors.obsidian.withValues(alpha: 0.75),
+                    color: colors.onEmber.withValues(alpha: 0.75),
                   ),
                 ),
               ],

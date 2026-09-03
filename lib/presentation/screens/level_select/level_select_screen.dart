@@ -50,6 +50,12 @@ class LevelSelectScreen extends ConsumerWidget {
               ),
               // One header + grid per chapter. Sixty-odd cards in a single
               // run reads as a wall; the chapter names are the map.
+              //
+              // A chapter the player has not reached shows as a sealed strip
+              // rather than a grid of locked cards: the stages inside stay
+              // out of sight until the section before it is finished, so the
+              // list stays short and the next chapter reads as something to
+              // arrive at rather than a wall of padlocks.
               for (final chapter in chapters) ...[
                 SliverToBoxAdapter(
                   child: ChapterHeading(
@@ -57,29 +63,34 @@ class LevelSelectScreen extends ConsumerWidget {
                     progress: progress,
                   ),
                 ),
-                SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    mainAxisSpacing: AppSpacing.x12,
-                    crossAxisSpacing: AppSpacing.x12,
-                    // Tall enough for a three-line blurb at a large system
-                    // font scale; the later chapters have more to say than
-                    // "flip the signal".
-                    mainAxisExtent: 160,
+                if (progress.isUnlocked(chapter.levels.first.id))
+                  SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      mainAxisSpacing: AppSpacing.x12,
+                      crossAxisSpacing: AppSpacing.x12,
+                      // Tall enough for a three-line blurb at a large system
+                      // font scale; the later chapters have more to say than
+                      // "flip the signal".
+                      mainAxisExtent: 160,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      childCount: chapter.levels.length,
+                      (context, index) {
+                        final level = chapter.levels[index];
+                        return LevelCard(
+                          level: level,
+                          progress: progress.forLevel(level.id),
+                          unlocked: progress.isUnlocked(level.id),
+                          onTap: () => context.go(AppRoutes.game(level.id)),
+                        );
+                      },
+                    ),
+                  )
+                else
+                  SliverToBoxAdapter(
+                    child: SealedChapter(chapter: chapter),
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    childCount: chapter.levels.length,
-                    (context, index) {
-                      final level = chapter.levels[index];
-                      return LevelCard(
-                        level: level,
-                        progress: progress.forLevel(level.id),
-                        unlocked: progress.isUnlocked(level.id),
-                        onTap: () => context.go(AppRoutes.game(level.id)),
-                      );
-                    },
-                  ),
-                ),
               ],
               const SliverToBoxAdapter(
                 child: SizedBox(height: AppSpacing.x24),
@@ -108,10 +119,13 @@ class ChapterHeading extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final solved =
         chapter.levels.where((l) => progress.forLevel(l.id).solved).length;
+    final open = progress.isUnlocked(chapter.levels.first.id);
 
     return Semantics(
       header: true,
-      label: '${chapter.name}. $solved of ${chapter.levels.length} solved.',
+      label: open
+          ? '${chapter.name}. $solved of ${chapter.levels.length} solved.'
+          : '${chapter.name}. Locked.',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.only(
@@ -120,16 +134,76 @@ class ChapterHeading extends StatelessWidget {
         ),
         child: Row(
           children: [
+            if (!open) ...[
+              Icon(
+                Icons.lock_outline,
+                size: 18,
+                color: context.colors.obsidianMuted,
+              ),
+              const SizedBox(width: AppSpacing.x8),
+            ],
             Expanded(
               child: Text(
                 chapter.name.toUpperCase(),
-                style: text.titleMedium,
+                style: text.titleMedium?.copyWith(
+                  color: open
+                      ? context.colors.obsidian
+                      : context.colors.obsidianMuted,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: AppSpacing.x8),
-            Text('$solved / ${chapter.levels.length}', style: captionStyle()),
+            if (open)
+              Text(
+                '$solved / ${chapter.levels.length}',
+                style: captionStyle().copyWith(color: context.colors.obsidian),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A chapter the player has not reached: how many stages wait inside, and
+/// nothing about what they are.
+///
+/// Naming the count rather than the stages keeps the promise concrete while
+/// leaving the surprise intact — the chapter title already says what the
+/// subject will be.
+class SealedChapter extends StatelessWidget {
+  const SealedChapter({super.key, required this.chapter});
+
+  final Chapter chapter;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+
+    return Semantics(
+      label: '${chapter.levels.length} stages, still locked.',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.x20,
+          vertical: AppSpacing.x16,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          border: Border.all(color: context.colors.hairline, width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                '${chapter.levels.length} stages — finish the section above '
+                'to open them.',
+                style: text.bodySmall
+                    ?.copyWith(color: context.colors.obsidianMuted),
+              ),
+            ),
           ],
         ),
       ),
@@ -154,7 +228,15 @@ class LevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
+    // A solved card is filled with Sulfur, so its whole type block switches
+    // to the ink that reads on Sulfur.
+    final ink = progress.solved
+        ? context.colors.onSulfur
+        : context.colors.obsidian;
+    final text = Theme.of(context).textTheme.apply(
+          bodyColor: ink,
+          displayColor: ink,
+        );
 
     return Semantics(
       button: true,
@@ -212,12 +294,15 @@ class LevelCard extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Text('PAR ${level.par}', style: captionStyle()),
+                    Text(
+                      'PAR ${level.par}',
+                      style: captionStyle().copyWith(color: ink),
+                    ),
                     const Spacer(),
                     if (progress.bestGateCount != null)
                       Text(
                         'BEST ${progress.bestGateCount}',
-                        style: captionStyle(),
+                        style: captionStyle().copyWith(color: ink),
                       ),
                   ],
                 ),

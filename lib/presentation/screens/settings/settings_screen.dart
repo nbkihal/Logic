@@ -38,7 +38,10 @@ class SettingsScreen extends ConsumerWidget {
                 Text('Theme', style: text.titleSmall),
                 const SizedBox(height: AppSpacing.x4),
                 Text(
-                  AppPalette.byId(settings.themeId).blurb,
+                  settings.themeId == AppPalette.autoId
+                      ? 'Following your phone: '
+                          '${context.colors.name.toLowerCase()} right now.'
+                      : AppPalette.byId(settings.themeId).blurb,
                   style: text.bodySmall,
                 ),
                 const SizedBox(height: AppSpacing.x16),
@@ -46,6 +49,14 @@ class SettingsScreen extends ConsumerWidget {
                   spacing: AppSpacing.x12,
                   runSpacing: AppSpacing.x12,
                   children: [
+                    ThemeSwatch(
+                      palette: context.colors,
+                      label: 'Auto',
+                      selected: settings.themeId == AppPalette.autoId,
+                      onTap: () => controller.updateSettings(
+                        settings.copyWith(themeId: AppPalette.autoId),
+                      ),
+                    ),
                     for (final palette in AppPalette.all)
                       ThemeSwatch(
                         palette: palette,
@@ -172,11 +183,17 @@ class ThemeSwatch extends StatelessWidget {
     required this.palette,
     required this.selected,
     required this.onTap,
+    this.label,
   });
 
   final AppPalette palette;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Overrides the caption, for the Auto entry that has no palette of its own.
+  final String? label;
+
+  String get _name => label ?? palette.name;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +202,7 @@ class ThemeSwatch extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: '${palette.name} theme. ${palette.blurb}',
+      label: '$_name theme. ${palette.blurb}',
       excludeSemantics: true,
       child: PressableScale(
         onPressed: onTap,
@@ -242,7 +259,7 @@ class ThemeSwatch extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.x4),
               Text(
-                palette.name.toUpperCase(),
+                _name.toUpperCase(),
                 style: text.labelSmall?.copyWith(
                   color: palette.obsidian,
                   letterSpacing: 1.5,

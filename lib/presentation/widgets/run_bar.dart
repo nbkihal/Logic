@@ -66,6 +66,8 @@ class RunBar extends ConsumerWidget {
               tooltip: run.playing ? 'Pause' : 'Run every row',
               style: IconButton.styleFrom(
                 backgroundColor: run.playing ? colors.ember : colors.sulfur,
+                foregroundColor:
+                    run.playing ? colors.onEmber : colors.onSulfur,
                 side: BorderSide(color: colors.obsidian, width: 1.5),
               ),
             ),
@@ -95,7 +97,7 @@ class RunBar extends ConsumerWidget {
                         '${level.target.inputNames[i]}='
                             '${inputs[i] ? 1 : 0}',
                     ].join('  '),
-                    style: AppTypography.pinLabel,
+                    style: pinLabelOf(context),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

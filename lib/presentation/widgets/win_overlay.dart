@@ -253,3 +253,11 @@ class StarRow extends StatelessWidget {
 /// Small caps label used above values on cards.
 TextStyle captionStyle() =>
     AppTypography.textTheme.labelSmall!.copyWith(letterSpacing: 1.5);
+
+/// The monospace pin/table face, in the active palette's ink.
+///
+/// [AppTypography.pinLabel] deliberately carries no colour so it inherits;
+/// this is the one place that decides what it inherits *from*, which keeps
+/// tabular digits legible on a dark palette as well as a light one.
+TextStyle pinLabelOf(BuildContext context) =>
+    AppTypography.pinLabel.copyWith(color: context.colors.obsidian);

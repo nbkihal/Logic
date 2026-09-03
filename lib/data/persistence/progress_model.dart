@@ -44,7 +44,7 @@ class GameSettings {
     this.animationSpeed = 1.0,
     this.reducedMotion = false,
     this.soundEnabled = true,
-    this.themeId = 'caldera',
+    this.themeId = 'auto',
   });
 
   /// 0.5x to 2.0x. Higher is faster.
@@ -84,7 +84,7 @@ class GameSettings {
             (json['speed'] as num?)?.toDouble().clamp(0.5, 2.0) ?? 1.0,
         reducedMotion: json['reducedMotion'] as bool? ?? false,
         soundEnabled: json['sound'] as bool? ?? true,
-        themeId: json['theme'] as String? ?? 'caldera',
+        themeId: json['theme'] as String? ?? 'auto',
       );
 }
 

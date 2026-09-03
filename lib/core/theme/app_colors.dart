@@ -22,6 +22,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.pumice,
     required this.obsidian,
     required this.chalk,
+    required this.onEmber,
+    required this.onSulfur,
     required this.signalLow,
     required this.signalFloating,
   });
@@ -54,8 +56,17 @@ class AppPalette extends ThemeExtension<AppPalette> {
   /// Primary text, headings, borders.
   final Color obsidian;
 
-  /// Text on an accent fill.
+  /// Text on a dark surface — the inverse of [obsidian].
   final Color chalk;
+
+  /// Ink for anything sitting *on* an [ember] fill, and on a [sulfur] one.
+  ///
+  /// These cannot be derived. Caldera's Ember is dark enough for black text
+  /// while Orchard's green needs white, and a pale Sulfur wants dark ink in
+  /// every palette — so each one states its own answer rather than letting a
+  /// rule get it wrong somewhere.
+  final Color onEmber;
+  final Color onSulfur;
 
   /// Logic low (0): de-energized.
   final Color signalLow;
@@ -98,6 +109,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? pumice,
     Color? obsidian,
     Color? chalk,
+    Color? onEmber,
+    Color? onSulfur,
     Color? signalLow,
     Color? signalFloating,
   }) =>
@@ -113,6 +126,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
         pumice: pumice ?? this.pumice,
         obsidian: obsidian ?? this.obsidian,
         chalk: chalk ?? this.chalk,
+        onEmber: onEmber ?? this.onEmber,
+        onSulfur: onSulfur ?? this.onSulfur,
         signalLow: signalLow ?? this.signalLow,
         signalFloating: signalFloating ?? this.signalFloating,
       );
@@ -135,6 +150,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
       pumice: mix(pumice, other.pumice),
       obsidian: mix(obsidian, other.obsidian),
       chalk: mix(chalk, other.chalk),
+      onEmber: mix(onEmber, other.onEmber),
+      onSulfur: mix(onSulfur, other.onSulfur),
       signalLow: mix(signalLow, other.signalLow),
       signalFloating: mix(signalFloating, other.signalFloating),
     );
@@ -153,6 +170,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     pumice: Color(0xFFE2E2DF),
     obsidian: Color(0xFF070607),
     chalk: Color(0xFFFFFFFF),
+    onEmber: Color(0xFF070607),
+    onSulfur: Color(0xFF070607),
     signalLow: Color(0xFF3A3739),
     signalFloating: Color(0xFF9A9793),
   );
@@ -170,6 +189,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     pumice: Color(0xFF121316),
     obsidian: Color(0xFFF2F1EE),
     chalk: Color(0xFF0B0C0E),
+    onEmber: Color(0xFF0B0C0E),
+    onSulfur: Color(0xFF0B0C0E),
     signalLow: Color(0xFF4A4E57),
     signalFloating: Color(0xFF6E7480),
   );
@@ -187,6 +208,8 @@ class AppPalette extends ThemeExtension<AppPalette> {
     pumice: Color(0xFF0E2233),
     obsidian: Color(0xFFE6F1FA),
     chalk: Color(0xFF06131E),
+    onEmber: Color(0xFF06131E),
+    onSulfur: Color(0xFF06131E),
     signalLow: Color(0xFF2C4257),
     signalFloating: Color(0xFF5A7690),
   );
@@ -204,12 +227,28 @@ class AppPalette extends ThemeExtension<AppPalette> {
     pumice: Color(0xFFE7EDE3),
     obsidian: Color(0xFF10231A),
     chalk: Color(0xFFFFFFFF),
+    onEmber: Color(0xFFFFFFFF),
+    onSulfur: Color(0xFF10231A),
     signalLow: Color(0xFF35473D),
     signalFloating: Color(0xFF8FA096),
   );
 
-  /// Every palette the picker offers, in display order.
+  /// Not a palette: the id that means "use whichever of [caldera] and
+  /// [midnight] matches the phone right now".
+  static const autoId = 'auto';
+
+  /// Every palette the picker offers, in display order. Auto leads, because
+  /// following the phone is what most people want and never have to think
+  /// about again.
   static const all = [caldera, midnight, blueprint, orchard];
+
+  /// The palette for [id], resolving [autoId] against [brightness].
+  static AppPalette resolve(String id, Brightness brightness) {
+    if (id == autoId) {
+      return brightness == Brightness.dark ? midnight : caldera;
+    }
+    return byId(id);
+  }
 
   static AppPalette byId(String id) =>
       all.firstWhere((p) => p.id == id, orElse: () => caldera);
