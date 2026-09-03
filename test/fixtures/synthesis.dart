@@ -90,6 +90,8 @@ class LogicSynthesizer {
       final nv = ~v & _full;
       final low = _cofactor(f, i, high: false);
       final high = _cofactor(f, i, high: true);
+      // f ignores this input — splitting on it would just re-derive f.
+      if (low == high) continue;
 
       // f = xi XOR g: flipping xi always flips the output.
       if (low == (~high & _full)) {
@@ -373,16 +375,41 @@ class LogicSynthesizer {
     final done = _rootsCache;
     if (done != null) return done;
 
-    final roots = <_Node>[];
-    for (var out = 0; out < table.outputNames.length; out++) {
-      final root = lower(_best(functionOf(table, out)));
-      roots.add(root);
-      _built.addAll(_gatesOf([root]).map((gate) => gate.key));
-      // Costs changed now that more of the board is standing, so the cached
-      // choices are stale.
+    // A first pass only lets a later output reuse an earlier one's gates.
+    // Feeding the whole board back in and going again lets the earliest
+    // output reuse the last one's too, which is where multi-output stages
+    // find their real savings. Each pass is measured for real, so a pass
+    // that guesses badly is simply discarded.
+    var best = <_Node>[];
+    var bestCount = 1 << 30;
+    final assumed = <String>{};
+
+    for (var pass = 0; pass < 3; pass++) {
+      _built
+        ..clear()
+        ..addAll(assumed);
       _bestCache.clear();
+
+      final roots = <_Node>[];
+      for (var out = 0; out < table.outputNames.length; out++) {
+        final root = lower(_best(functionOf(table, out)));
+        roots.add(root);
+        _built.addAll(_gatesOf([root]).map((gate) => gate.key));
+        // Costs changed now that more of the board is standing, so the
+        // cached choices are stale.
+        _bestCache.clear();
+      }
+
+      final gates = _gatesOf(roots);
+      if (gates.length < bestCount) {
+        bestCount = gates.length;
+        best = roots;
+      }
+      assumed
+        ..clear()
+        ..addAll(gates.map((gate) => gate.key));
     }
-    return _rootsCache = roots;
+    return _rootsCache = best;
   }
 
   /// Gate count of the synthesized solution — the number `par` is set from.

@@ -6,6 +6,7 @@ class Level {
   const Level({
     required this.id,
     required this.name,
+    required this.chapter,
     required this.blurb,
     required this.inputCount,
     required this.outputCount,
@@ -18,6 +19,11 @@ class Level {
 
   final int id;
   final String name;
+
+  /// The arc this level belongs to. Chapters group the stage list and mark
+  /// where the game deliberately changes subject: the difficulty curve runs
+  /// *within* a chapter, and resets at each new one (CLAUDE.md §8).
+  final String chapter;
 
   /// One-line teaching hook.
   final String blurb;

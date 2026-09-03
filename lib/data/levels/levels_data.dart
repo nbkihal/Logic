@@ -34,6 +34,7 @@ const List<Level> kLevels = [
   Level(
     id: 1,
     name: 'Invert It',
+    chapter: 'tmp',
     blurb: 'One gate, one job: flip the signal.',
     inputCount: 1,
     outputCount: 1,
@@ -51,6 +52,7 @@ const List<Level> kLevels = [
   Level(
     id: 2,
     name: 'Both On',
+    chapter: 'tmp',
     blurb: 'Light up only when both switches are on.',
     inputCount: 2,
     outputCount: 1,
@@ -70,6 +72,7 @@ const List<Level> kLevels = [
   Level(
     id: 3,
     name: 'Either On',
+    chapter: 'tmp',
     blurb: 'One switch is enough this time.',
     inputCount: 2,
     outputCount: 1,
@@ -89,6 +92,7 @@ const List<Level> kLevels = [
   Level(
     id: 4,
     name: 'Not Both',
+    chapter: 'tmp',
     blurb: 'Chain two gates: invert what AND says.',
     inputCount: 2,
     outputCount: 1,
@@ -108,6 +112,7 @@ const List<Level> kLevels = [
   Level(
     id: 5,
     name: 'Odd One Out',
+    chapter: 'tmp',
     blurb: 'Exactly one, never both — build XOR from scratch.',
     inputCount: 2,
     outputCount: 1,
@@ -127,6 +132,7 @@ const List<Level> kLevels = [
   Level(
     id: 6,
     name: 'Half Adder',
+    chapter: 'tmp',
     blurb: 'Add two bits: a sum and a carry.',
     inputCount: 2,
     outputCount: 2,
@@ -152,6 +158,7 @@ const List<Level> kLevels = [
   Level(
     id: 7,
     name: 'Nothing But NAND',
+    chapter: 'tmp',
     blurb: 'One gate type can build them all. Start with AND.',
     inputCount: 2,
     outputCount: 1,
@@ -171,6 +178,7 @@ const List<Level> kLevels = [
   Level(
     id: 8,
     name: 'NAND Makes OR',
+    chapter: 'tmp',
     blurb: 'Still only NAND. Now make OR out of it.',
     inputCount: 2,
     outputCount: 1,
@@ -190,6 +198,7 @@ const List<Level> kLevels = [
   Level(
     id: 9,
     name: 'Black Box',
+    chapter: 'tmp',
     blurb: 'The table is hidden. Poke the inputs and work it out.',
     inputCount: 2,
     outputCount: 1,
@@ -216,6 +225,7 @@ const List<Level> kLevels = [
   Level(
     id: 10,
     name: 'Majority Rules',
+    chapter: 'tmp',
     blurb: 'Three votes in, the winning side out.',
     inputCount: 3,
     outputCount: 1,
@@ -239,6 +249,7 @@ const List<Level> kLevels = [
   Level(
     id: 11,
     name: 'Full Adder',
+    chapter: 'tmp',
     blurb: 'Two bits plus a carry-in. The heart of arithmetic.',
     inputCount: 3,
     outputCount: 2,
@@ -262,6 +273,7 @@ const List<Level> kLevels = [
   Level(
     id: 12,
     name: 'The Selector',
+    chapter: 'tmp',
     blurb: 'S picks the winner: pass A through, or pass B.',
     inputCount: 3,
     outputCount: 1,
@@ -285,6 +297,7 @@ const List<Level> kLevels = [
   Level(
     id: 13,
     name: 'Capstone: Compare',
+    chapter: 'tmp',
     blurb: 'Two 2-bit numbers in. Greater, equal, or less out.',
     inputCount: 4,
     outputCount: 3,
