@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/board_controller.dart';
 import '../../application/circuit_controller.dart';
+import '../../application/simulation_provider.dart';
+import '../../application/sound_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
@@ -35,6 +37,8 @@ class PaletteBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final board = ref.watch(boardControllerProvider);
     final available = _order.where(palette.contains).toList();
+    final ruledOut = ref.watch(ruledOutGatesProvider);
+    final suggested = ref.watch(suggestedGateProvider);
 
     return Semantics(
       container: true,
@@ -58,9 +62,12 @@ class PaletteBar extends ConsumerWidget {
                   return _PaletteChip(
                     type: type,
                     armed: board.armed == type,
-                    onTap: () =>
-                        ref.read(boardControllerProvider.notifier)
-                            .arm(type),
+                    ruledOut: ruledOut.contains(type),
+                    suggested: suggested == type,
+                    onTap: () {
+                      ref.read(soundProvider).play(Sfx.tap);
+                      ref.read(boardControllerProvider.notifier).arm(type);
+                    },
                   );
                 },
               ),
@@ -74,41 +81,74 @@ class PaletteBar extends ConsumerWidget {
   }
 }
 
+/// One gate in the palette.
+///
+/// Hints show up here rather than in a wall of text: a gate no solution needs
+/// is struck through and faded, and the one worth starting from is ringed.
+/// The player can still place either — a hint narrows the search, it does not
+/// close the door.
 class _PaletteChip extends StatelessWidget {
   const _PaletteChip({
     required this.type,
     required this.armed,
+    required this.ruledOut,
+    required this.suggested,
     required this.onTap,
   });
 
   final GateType type;
   final bool armed;
+  final bool ruledOut;
+  final bool suggested;
   final VoidCallback onTap;
+
+  String get _semanticSuffix {
+    if (armed) return ', armed. Tap the board to place it.';
+    if (suggested) return ', suggested by the hint. Tap to pick it up.';
+    if (ruledOut) return ', not needed for a par solution. Tap to pick it up.';
+    return '. Tap to pick it up.';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final label = type == GateType.constant ? '1' : type.label;
+
     return Semantics(
       button: true,
       selected: armed,
-      label: armed
-          ? '${type.label}, armed. Tap the board to place it.'
-          : '${type.label}. Tap to pick it up.',
+      label: '${type.label}$_semanticSuffix',
       excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          constraints: const BoxConstraints(minWidth: 64),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
-          decoration: BoxDecoration(
-            color: armed ? context.colors.ember : context.colors.limestone,
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: context.colors.obsidian, width: 1.5),
-          ),
-          child: Center(
-            child: Text(
-              type == GateType.constant ? '1' : type.label,
-              style: AppTypography.textTheme.labelMedium,
+        child: AnimatedOpacity(
+          opacity: ruledOut && !armed ? 0.4 : 1,
+          duration: const Duration(milliseconds: 220),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 140),
+            constraints: const BoxConstraints(minWidth: 64),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
+            decoration: BoxDecoration(
+              color: armed
+                  ? colors.ember
+                  : suggested
+                      ? colors.sulfur
+                      : colors.limestone,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              border: Border.all(
+                color: suggested && !armed ? colors.ember : colors.obsidian,
+                width: suggested && !armed ? 3 : 1.5,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: AppTypography.textTheme.labelMedium?.copyWith(
+                  decoration:
+                      ruledOut && !armed ? TextDecoration.lineThrough : null,
+                  decorationThickness: 2,
+                ),
+              ),
             ),
           ),
         ),

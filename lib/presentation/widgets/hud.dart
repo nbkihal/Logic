@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/board_controller.dart';
 import '../../application/circuit_controller.dart';
+import '../../application/level_scope.dart';
 import '../../application/simulation_provider.dart';
+import '../../application/sound_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
@@ -47,6 +49,7 @@ class Hud extends ConsumerWidget {
           ),
         ),
         const Spacer(),
+        const HintButton(),
         _HudButton(
           icon: Icons.undo,
           tooltip: 'Undo',
@@ -103,6 +106,76 @@ class Hud extends ConsumerWidget {
       ref.read(circuitControllerProvider.notifier).reset();
       ref.read(boardControllerProvider.notifier).clearSelection();
     }
+  }
+}
+
+/// Asks for the next rung of help, and says what it just gave away.
+///
+/// The message is a snack rather than a panel because a hint is a nudge: it
+/// should be readable in a second and then get out of the way of the board.
+class HintButton extends ConsumerWidget {
+  const HintButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final level = ref.watch(levelProvider);
+    final given = ref.watch(hintProvider);
+    if (level == null) return const SizedBox.shrink();
+
+    final exhausted = given == HintLevel.keystone ||
+        (given == HintLevel.narrowed && level.keystoneGate == null);
+
+    return _HudButton(
+      icon: given == HintLevel.none
+          ? Icons.lightbulb_outline
+          : Icons.lightbulb,
+      tooltip: 'Hint',
+      onPressed: exhausted
+          ? null
+          : () {
+              ref.read(soundProvider).play(Sfx.tap);
+              ref.read(hintProvider.notifier).next(
+                    tableAlreadyVisible: level.showTargetTable,
+                  );
+              final message = _messageFor(
+                ref.read(hintProvider),
+                level,
+              );
+              ScaffoldMessenger.of(context)
+                ..clearSnackBars()
+                ..showSnackBar(
+                  SnackBar(
+                    content: Text(message),
+                    duration: const Duration(seconds: 6),
+                  ),
+                );
+            },
+    );
+  }
+
+  String _messageFor(HintLevel given, Level level) => switch (given) {
+        HintLevel.none => '',
+        HintLevel.table => 'Table revealed. Read it row by row.',
+        HintLevel.narrowed => _narrowedMessage(level),
+        HintLevel.keystone => _keystoneMessage(level),
+      };
+
+  String _narrowedMessage(Level level) {
+    final unused = level.unusedGates;
+    if (unused.isEmpty) {
+      return 'Every gate on offer earns its place in a par solution.';
+    }
+    final names = unused.map((g) => g.label).toList()..sort();
+    return 'A ${level.par}-gate solution needs none of: '
+        '${names.join(', ')}. They are crossed off below.';
+  }
+
+  String _keystoneMessage(Level level) {
+    final gate = level.keystoneGate;
+    if (gate == null) return 'No further hint for this one.';
+    final count = level.solutionGates[gate] ?? 1;
+    final many = count > 1 ? ' — $count of them' : '';
+    return 'Start with ${gate.label}$many. It is ringed in the palette.';
   }
 }
 

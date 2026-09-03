@@ -13,6 +13,7 @@ class Level {
     required this.palette,
     required this.target,
     required this.par,
+    this.solutionGates = const {},
     this.showTargetTable = true,
     this.gateLimit,
   });
@@ -44,6 +45,30 @@ class Level {
 
   /// Optional hard cap on placeable gates. Null means unlimited.
   final int? gateLimit;
+
+  /// What one known par-sized solution is built from: gate type to how many
+  /// of it. This is the evidence behind the hints — which palette entries a
+  /// player can safely ignore, and which one is worth reaching for first —
+  /// so a hint can never point somewhere the level does not go.
+  ///
+  /// It describes *a* solution, not the only one; the hints say so.
+  final Map<GateType, int> solutionGates;
+
+  /// Palette entries no known par solution needs. Hint two crosses these off.
+  Set<GateType> get unusedGates =>
+      palette.difference(solutionGates.keys.toSet());
+
+  /// The gate to reach for first: the one the solution leans on most, ties
+  /// broken by the palette's own teaching order.
+  GateType? get keystoneGate {
+    if (solutionGates.isEmpty) return null;
+    final entries = solutionGates.entries.toList()
+      ..sort((a, b) {
+        final byCount = b.value.compareTo(a.value);
+        return byCount != 0 ? byCount : a.key.index.compareTo(b.key.index);
+      });
+    return entries.first.key;
+  }
 
   /// Star band for a solved circuit of [gateCount] gates (CLAUDE.md §7,
   /// with the §20 recommended default for the two-star band).

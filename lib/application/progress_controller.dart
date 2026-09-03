@@ -1,5 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/motion.dart';
 import '../data/persistence/progress_model.dart';
 import '../data/persistence/progress_store.dart';
 
@@ -63,3 +65,14 @@ final progressProvider = Provider<Progress>((ref) {
 final settingsProvider = Provider<GameSettings>((ref) {
   return ref.watch(progressProvider).settings;
 });
+
+/// The motion budget for [context]: the player's setting, narrowed by the
+/// operating system's own accessibility switch.
+Motion motionOf(BuildContext context, WidgetRef ref) {
+  final settings = ref.watch(settingsProvider);
+  return Motion.of(
+    context,
+    reducedMotion: settings.reducedMotion,
+    speed: settings.animationSpeed,
+  );
+}

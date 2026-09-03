@@ -27,6 +27,16 @@ abstract final class AnimationConstants {
   /// Idle threshold before the Home demo starts breathing.
   static const idleBeforeShimmer = Duration(seconds: 6);
 
+  /// Cross-fade when the player picks a different palette.
+  static const themeSweep = Duration(milliseconds: 420);
+
+  /// A button's press-in, and the release that springs back.
+  static const buttonPress = Duration(milliseconds: 90);
+  static const buttonRelease = Duration(milliseconds: 240);
+
+  /// One input combination during a solved-board run.
+  static const runStep = Duration(milliseconds: 520);
+
   static const instant = Duration.zero;
 
   static const minSpeed = 0.5;

@@ -174,6 +174,25 @@ class CircuitController extends Notifier<Circuit> {
     );
   }
 
+  /// Drives every input pin at once, without touching the undo stack.
+  ///
+  /// This is how the run-through walks the truth table: it is a *reading* of
+  /// the circuit, not an edit of it, so undo must not fill up with sixteen
+  /// steps the player never made. Their own toggles still undo normally.
+  void driveInputs(List<bool> values) {
+    final pins = state.inputPins;
+    if (values.length != pins.length) return;
+
+    final components = {...state.components};
+    var changed = false;
+    for (var i = 0; i < pins.length; i++) {
+      if (pins[i].inputValue == values[i]) continue;
+      components[pins[i].id] = pins[i].copyWith(inputValue: values[i]);
+      changed = true;
+    }
+    if (changed) state = state.copyWith(components: components);
+  }
+
   void undo() {
     if (_undo.isEmpty) return;
     _redo.add(state);

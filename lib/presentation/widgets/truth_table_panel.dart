@@ -67,9 +67,7 @@ class TruthTablePanel extends ConsumerWidget {
             Expanded(child: Text('TRUTH TABLE', style: text.headlineSmall)),
             if (hidden)
               FilledButton(
-                onPressed: () => ref
-                    .read(hintRevealedProvider.notifier)
-                    .reveal(),
+                onPressed: () => ref.read(hintProvider.notifier).reveal(),
                 child: const Text('Reveal'),
               ),
           ],

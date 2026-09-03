@@ -6,6 +6,7 @@ import '../../../app_router.dart';
 import '../../../application/board_controller.dart';
 import '../../../application/level_scope.dart';
 import '../../../application/progress_controller.dart';
+import '../../../application/run_controller.dart';
 import '../../../application/simulation_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -15,6 +16,7 @@ import '../../../domain/models/level.dart';
 import '../../canvas/circuit_canvas.dart';
 import '../../widgets/hud.dart';
 import '../../widgets/palette_bar.dart';
+import '../../widgets/run_bar.dart';
 import '../../widgets/truth_table_panel.dart';
 import '../../widgets/win_overlay.dart';
 
@@ -95,6 +97,14 @@ class _GameViewState extends ConsumerState<_GameView> {
                           outputNames: level.target.outputNames,
                         ),
                       ),
+                      // A solved board earns a transport: the level is done,
+                      // so the board stops being a puzzle and becomes a
+                      // machine worth watching.
+                      if (report.solved) ...[
+                        const SizedBox(height: AppSpacing.x8),
+                        RunBar(level: level),
+                      ],
+                      const SizedBox(height: AppSpacing.x4),
                       PaletteBar(palette: level.palette),
                     ],
                   ),
@@ -109,6 +119,7 @@ class _GameViewState extends ConsumerState<_GameView> {
                   gateCount: gates,
                   hasNext: const LevelRepository().next(level.id) != null,
                   onRetry: () => setState(() => _winDismissed = true),
+                  onInspect: () => setState(() => _winDismissed = true),
                   onNext: () {
                     final next = const LevelRepository().next(level.id);
                     if (next != null) context.go(AppRoutes.game(next.id));
@@ -130,6 +141,9 @@ class _GameViewState extends ConsumerState<_GameView> {
 
     if (!report.solved) {
       _winDismissed = false;
+      // A half-edited circuit has nothing to demonstrate; drop the run
+      // rather than leave it driving pins behind a hidden transport.
+      Future.microtask(() => ref.read(runProvider.notifier).stop());
       return;
     }
 

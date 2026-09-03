@@ -497,6 +497,17 @@ class LogicSynthesizer {
   /// Gate count of the synthesized solution — the number `par` is set from.
   int gateCountFor(TruthTable table) => _gatesOf(_roots(table)).length;
 
+  /// What the synthesized solution is made of: gate type to how many. This
+  /// is baked into the level data so the in-game hints can describe a real
+  /// solution rather than guess at one.
+  Map<GateType, int> gateMixFor(TruthTable table) {
+    final mix = <GateType, int>{};
+    for (final gate in _gatesOf(_roots(table))) {
+      mix[gate.gateType] = (mix[gate.gateType] ?? 0) + 1;
+    }
+    return mix;
+  }
+
   /// A circuit that solves [level], built only from its palette.
   Circuit circuitFor(Level level) {
     final roots = _roots(level.target);

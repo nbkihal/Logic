@@ -89,7 +89,7 @@ class GateWidget extends StatelessWidget {
                     onMoveUpdate?.call(d.globalPosition),
                 onLongPressEnd: (_) => onMoveEnd?.call(),
                 onLongPressCancel: onMoveEnd,
-                child: _body(),
+                child: _body(context),
               ),
             ),
           ),
@@ -99,7 +99,7 @@ class GateWidget extends StatelessWidget {
     );
   }
 
-  Widget _body() {
+  Widget _body(BuildContext context) {
     final body = switch (component.type) {
       GateType.input => _PinBody(label: label ?? 'IN', value: _outputValue),
       GateType.constant => _PinBody(

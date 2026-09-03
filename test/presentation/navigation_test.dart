@@ -9,11 +9,22 @@ import 'package:logic_circuit_builder/data/persistence/progress_model.dart';
 import 'package:logic_circuit_builder/data/persistence/progress_store.dart';
 import 'package:logic_circuit_builder/presentation/screens/level_select/level_select_screen.dart';
 
+/// Widget tests pump-and-settle, which never settles while an idle
+/// animation is looping. Turning the OS accessibility switch on is also the
+/// honest thing to assert against: it is a real setting the app supports, and
+/// it makes every test deterministic.
+void useStillMotion(WidgetTester tester) {
+  tester.binding.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
+  addTearDown(tester.binding.platformDispatcher.clearAccessibilityFeaturesTestValue);
+}
+
 Future<void> pumpApp(
   WidgetTester tester, {
   Progress progress = const Progress(),
   Size size = const Size(400, 820),
 }) async {
+  useStillMotion(tester);
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -38,12 +49,15 @@ void main() {
       expect(find.text('CIRCUIT BUILDER'), findsOneWidget);
 
       final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
-      expect(scaffold.backgroundColor, AppColors.pumice);
+      expect(scaffold.backgroundColor, AppPalette.caldera.pumice);
     });
 
     testWidgets('offers Play on a fresh profile', (tester) async {
       await pumpApp(tester);
-      expect(find.widgetWithText(FilledButton, 'Play'), findsOneWidget);
+      // A fresh profile is invited to Start; the hero button carries the
+      // level it will open.
+      expect(find.text('START'), findsOneWidget);
+      expect(find.text('Level 1 — Invert It'), findsOneWidget);
       expect(find.textContaining('stars'), findsNothing);
     });
 
@@ -56,7 +70,7 @@ void main() {
         ),
       );
 
-      expect(find.widgetWithText(FilledButton, 'Continue'), findsOneWidget);
+      expect(find.text('CONTINUE'), findsOneWidget);
       // Every level is worth three stars, so the total tracks the arc length.
       final total = const LevelRepository().count * 3;
       expect(find.textContaining('3 of $total stars'), findsOneWidget);
@@ -114,7 +128,7 @@ void main() {
             .withLevel(2, const LevelProgress(stars: 1, solved: true)),
       );
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Continue'));
+      await tester.tap(find.text('CONTINUE'));
       await tester.pumpAndSettle();
 
       // Levels 1 and 2 solved, so level 3 is where they left off.
@@ -198,6 +212,7 @@ void main() {
   group('settings', () {
     testWidgets('toggling reduced motion persists it', (tester) async {
       final store = InMemoryProgressStore();
+      useStillMotion(tester);
       await tester.binding.setSurfaceSize(const Size(400, 820));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -212,6 +227,7 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, 'Settings'));
       await tester.pumpAndSettle();
 
+      await tester.scrollUntilVisible(find.byType(Switch).first, 200);
       await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
 
@@ -225,6 +241,7 @@ void main() {
           const LevelProgress(stars: 3, bestGateCount: 1, solved: true),
         ),
       );
+      useStillMotion(tester);
       await tester.binding.setSurfaceSize(const Size(400, 820));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -238,7 +255,12 @@ void main() {
 
       await tester.tap(find.widgetWithText(TextButton, 'Settings'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Reset all progress'));
+
+      final reset = find.widgetWithText(OutlinedButton, 'Reset all progress');
+      await tester.scrollUntilVisible(reset, 200);
+      await tester.ensureVisible(reset);
+      await tester.pumpAndSettle();
+      await tester.tap(reset);
       await tester.pumpAndSettle();
 
       expect(find.text('Reset all progress?'), findsOneWidget);
@@ -248,7 +270,9 @@ void main() {
       await tester.pumpAndSettle();
       expect((await store.load()).forLevel(1).stars, 3);
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Reset all progress'));
+      await tester.ensureVisible(reset);
+      await tester.pumpAndSettle();
+      await tester.tap(reset);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Reset'));
       await tester.pumpAndSettle();

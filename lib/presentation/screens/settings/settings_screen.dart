@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/levels/level_repository.dart';
 import '../../widgets/caldera_scaffold.dart';
+import '../../widgets/pressable.dart';
 
 /// Motion, sound, and the reset-progress escape hatch.
 class SettingsScreen extends ConsumerWidget {
@@ -30,6 +31,34 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.x16),
           Text('SETTINGS', style: text.headlineLarge),
           const SizedBox(height: AppSpacing.x24),
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Theme', style: text.titleSmall),
+                const SizedBox(height: AppSpacing.x4),
+                Text(
+                  AppPalette.byId(settings.themeId).blurb,
+                  style: text.bodySmall,
+                ),
+                const SizedBox(height: AppSpacing.x16),
+                Wrap(
+                  spacing: AppSpacing.x12,
+                  runSpacing: AppSpacing.x12,
+                  children: [
+                    for (final palette in AppPalette.all)
+                      ThemeSwatch(
+                        palette: palette,
+                        selected: palette.id == settings.themeId,
+                        onTap: () => controller.updateSettings(
+                          settings.copyWith(themeId: palette.id),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           _Card(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,6 +161,100 @@ class SettingsScreen extends ConsumerWidget {
     if (confirmed ?? false) {
       await ref.read(progressControllerProvider.notifier).resetProgress();
     }
+  }
+}
+
+/// One theme, shown as the thing it actually changes: a scrap of its own
+/// board, with a lit wire running through it.
+class ThemeSwatch extends StatelessWidget {
+  const ThemeSwatch({
+    super.key,
+    required this.palette,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final AppPalette palette;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '${palette.name} theme. ${palette.blurb}',
+      excludeSemantics: true,
+      child: PressableScale(
+        onPressed: onTap,
+        child: AnimatedContainer(
+          duration: AnimationConstants.buttonRelease,
+          curve: Curves.easeOutBack,
+          width: 108,
+          padding: const EdgeInsets.all(AppSpacing.x8),
+          decoration: BoxDecoration(
+            color: palette.pumice,
+            borderRadius: BorderRadius.circular(AppRadii.small + 6),
+            border: Border.all(
+              color: selected ? context.colors.ember : context.colors.hairline,
+              width: selected ? 3 : 1.5,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // A stand-in board: a card, a live wire, a lamp.
+              SizedBox(
+                height: 34,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: palette.limestone,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: palette.obsidian, width: 1.5),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 3,
+                        color: palette.signalHigh,
+                      ),
+                    ),
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: palette.ember,
+                        border: Border.all(color: palette.obsidian, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: palette.bloom, blurRadius: 10),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.x4),
+              Text(
+                palette.name.toUpperCase(),
+                style: text.labelSmall?.copyWith(
+                  color: palette.obsidian,
+                  letterSpacing: 1.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

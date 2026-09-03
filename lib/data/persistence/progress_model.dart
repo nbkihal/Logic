@@ -44,6 +44,7 @@ class GameSettings {
     this.animationSpeed = 1.0,
     this.reducedMotion = false,
     this.soundEnabled = true,
+    this.themeId = 'caldera',
   });
 
   /// 0.5x to 2.0x. Higher is faster.
@@ -54,21 +55,28 @@ class GameSettings {
 
   final bool soundEnabled;
 
+  /// Which [AppPalette] the player picked. An id rather than the palette
+  /// itself, so persistence never has to know about colours.
+  final String themeId;
+
   GameSettings copyWith({
     double? animationSpeed,
     bool? reducedMotion,
     bool? soundEnabled,
+    String? themeId,
   }) =>
       GameSettings(
         animationSpeed: animationSpeed ?? this.animationSpeed,
         reducedMotion: reducedMotion ?? this.reducedMotion,
         soundEnabled: soundEnabled ?? this.soundEnabled,
+        themeId: themeId ?? this.themeId,
       );
 
   Map<String, Object?> toJson() => {
         'speed': animationSpeed,
         'reducedMotion': reducedMotion,
         'sound': soundEnabled,
+        'theme': themeId,
       };
 
   static GameSettings fromJson(Map<String, Object?> json) => GameSettings(
@@ -76,6 +84,7 @@ class GameSettings {
             (json['speed'] as num?)?.toDouble().clamp(0.5, 2.0) ?? 1.0,
         reducedMotion: json['reducedMotion'] as bool? ?? false,
         soundEnabled: json['sound'] as bool? ?? true,
+        themeId: json['theme'] as String? ?? 'caldera',
       );
 }
 

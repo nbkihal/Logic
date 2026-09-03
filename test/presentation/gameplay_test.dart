@@ -14,6 +14,8 @@ import 'package:logic_circuit_builder/presentation/screens/game/game_screen.dart
 import 'package:logic_circuit_builder/presentation/widgets/gate_widget.dart';
 import 'package:logic_circuit_builder/presentation/widgets/palette_bar.dart';
 
+import 'navigation_test.dart' show useStillMotion;
+
 /// Boots the game screen for [levelId] on a phone-sized surface.
 Future<ProviderContainer> pumpGame(
   WidgetTester tester,
@@ -21,6 +23,7 @@ Future<ProviderContainer> pumpGame(
   ProgressStore? store,
   Size size = const Size(400, 820),
 }) async {
+  useStillMotion(tester);
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
 

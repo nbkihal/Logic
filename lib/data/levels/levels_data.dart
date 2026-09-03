@@ -81,6 +81,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _notOnly,
     par: 1,
+    solutionGates: {GateType.not: 1},
     target: TruthTable(
       inputNames: ['A'],
       outputNames: ['Q'],
@@ -99,6 +100,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _andNot,
     par: 1,
+    solutionGates: {GateType.and: 1},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -119,6 +121,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _primitives,
     par: 1,
+    solutionGates: {GateType.or: 1},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -139,6 +142,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _andNot,
     par: 2,
+    solutionGates: {GateType.not: 1, GateType.and: 1},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -159,6 +163,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _primitives,
     par: 5,
+    solutionGates: {GateType.not: 1, GateType.and: 2, GateType.or: 1},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -179,6 +184,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _toolkit,
     par: 2,
+    solutionGates: {GateType.and: 1, GateType.xor: 1},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['SUM', 'CARRY'],
@@ -199,6 +205,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _nandOnly,
     par: 2,
+    solutionGates: {GateType.nand: 2},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -219,6 +226,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _nandOnly,
     par: 3,
+    solutionGates: {GateType.nand: 3},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -239,6 +247,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _toolkit,
     par: 2,
+    solutionGates: {GateType.not: 1, GateType.or: 1},
     showTargetTable: false,
     target: TruthTable(
       inputNames: ['A', 'B'],
@@ -260,6 +269,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _toolkit,
     par: 4,
+    solutionGates: {GateType.and: 2, GateType.or: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
       outputNames: ['Q'],
@@ -284,6 +294,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 5,
+    solutionGates: {GateType.and: 2, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'CIN'],
       outputNames: ['SUM', 'CARRY'],
@@ -308,6 +319,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 4,
+    solutionGates: {GateType.and: 1, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'S'],
       outputNames: ['Q'],
@@ -332,6 +344,7 @@ const List<Level> kLevels = [
     outputCount: 3,
     palette: _fullSet,
     par: 9,
+    solutionGates: {GateType.not: 1, GateType.and: 3, GateType.or: 1, GateType.nor: 2, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A1', 'A0', 'B1', 'B0'],
       outputNames: ['A>B', 'A=B', 'A<B'],
@@ -364,6 +377,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _norOnly,
     par: 1,
+    solutionGates: {GateType.nor: 1},
     target: TruthTable(
       inputNames: ['A'],
       outputNames: ['Q'],
@@ -382,6 +396,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _norOnly,
     par: 2,
+    solutionGates: {GateType.nor: 2},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -402,6 +417,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _norOnly,
     par: 3,
+    solutionGates: {GateType.nor: 3},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -422,6 +438,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _norOnly,
     par: 5,
+    solutionGates: {GateType.nor: 5},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -442,6 +459,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _nandOnly,
     par: 4,
+    solutionGates: {GateType.nand: 4},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -462,6 +480,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _toolkit,
     par: 2,
+    solutionGates: {GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
       outputNames: ['LAMP'],
@@ -486,6 +505,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _toolkit,
     par: 3,
+    solutionGates: {GateType.not: 1, GateType.and: 2},
     target: TruthTable(
       inputNames: ['KEY', 'BELT', 'SEAT'],
       outputNames: ['CHIME'],
@@ -510,6 +530,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _toolkit,
     par: 2,
+    solutionGates: {GateType.and: 1, GateType.or: 1},
     target: TruthTable(
       inputNames: ['SMOKE', 'HEAT', 'TEST'],
       outputNames: ['SPRAY'],
@@ -534,6 +555,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _toolkit,
     par: 3,
+    solutionGates: {GateType.not: 1, GateType.and: 1, GateType.xor: 1},
     target: TruthTable(
       inputNames: ['UP', 'DOWN', 'DOORS'],
       outputNames: ['MOVE'],
@@ -558,6 +580,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 3,
+    solutionGates: {GateType.and: 2, GateType.xor: 1},
     target: TruthTable(
       inputNames: ['COIN', 'PICK', 'STOCK'],
       outputNames: ['VEND', 'REFUND'],
@@ -582,6 +605,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 5,
+    solutionGates: {GateType.not: 2, GateType.and: 2, GateType.or: 1},
     target: TruthTable(
       inputNames: ['CAR', 'PED', 'NIGHT'],
       outputNames: ['GREEN', 'WALK'],
@@ -606,6 +630,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 5,
+    solutionGates: {GateType.and: 2, GateType.or: 3},
     target: TruthTable(
       inputNames: ['KEY A', 'KEY B', 'KEY C', 'MGR'],
       outputNames: ['OPEN'],
@@ -638,6 +663,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _withXor,
     par: 4,
+    solutionGates: {GateType.and: 1, GateType.or: 2, GateType.xor: 1},
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
       outputNames: ['Q'],
@@ -662,6 +688,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _withXor,
     par: 5,
+    solutionGates: {GateType.not: 1, GateType.and: 1, GateType.or: 1, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
       outputNames: ['Q'],
@@ -686,6 +713,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 6,
+    solutionGates: {GateType.and: 2, GateType.or: 2, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
       outputNames: ['C1', 'C0'],
@@ -710,6 +738,7 @@ const List<Level> kLevels = [
     outputCount: 3,
     palette: _fullSet,
     par: 11,
+    solutionGates: {GateType.and: 5, GateType.or: 2, GateType.xor: 4},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['C2', 'C1', 'C0'],
@@ -742,6 +771,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 3,
+    solutionGates: {GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['P'],
@@ -774,6 +804,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 10,
+    solutionGates: {GateType.not: 1, GateType.and: 3, GateType.or: 3, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['Q'],
@@ -806,6 +837,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 7,
+    solutionGates: {GateType.and: 4, GateType.or: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['Q'],
@@ -838,6 +870,7 @@ const List<Level> kLevels = [
     outputCount: 4,
     palette: _andNot,
     par: 6,
+    solutionGates: {GateType.not: 2, GateType.and: 4},
     target: TruthTable(
       inputNames: ['A1', 'A0'],
       outputNames: ['Y0', 'Y1', 'Y2', 'Y3'],
@@ -858,6 +891,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _toolkit,
     par: 3,
+    solutionGates: {GateType.not: 1, GateType.and: 2},
     target: TruthTable(
       inputNames: ['D', 'S'],
       outputNames: ['Y0', 'Y1'],
@@ -878,6 +912,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _toolkit,
     par: 2,
+    solutionGates: {GateType.and: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'EN'],
       outputNames: ['QA', 'QB'],
@@ -902,6 +937,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 4,
+    solutionGates: {GateType.and: 1, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'S'],
       outputNames: ['X', 'Y'],
@@ -926,6 +962,7 @@ const List<Level> kLevels = [
     outputCount: 3,
     palette: _fullSet,
     par: 7,
+    solutionGates: {GateType.not: 1, GateType.and: 1, GateType.or: 5},
     target: TruthTable(
       inputNames: ['D3', 'D2', 'D1', 'D0'],
       outputNames: ['VALID', 'Q1', 'Q0'],
@@ -958,6 +995,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 6,
+    solutionGates: {GateType.and: 3, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'S', 'EN'],
       outputNames: ['X', 'Y'],
@@ -990,6 +1028,7 @@ const List<Level> kLevels = [
     outputCount: 4,
     palette: _fullSet,
     par: 3,
+    solutionGates: {GateType.and: 1, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A1', 'A0'],
       outputNames: ['P3', 'P2', 'P1', 'P0'],
@@ -1010,6 +1049,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 2,
+    solutionGates: {GateType.not: 1, GateType.xor: 1},
     target: TruthTable(
       inputNames: ['A1', 'A0'],
       outputNames: ['S1', 'S0'],
@@ -1030,6 +1070,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 3,
+    solutionGates: {GateType.not: 1, GateType.and: 1, GateType.xor: 1},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['DIFF', 'BORROW'],
@@ -1050,6 +1091,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 5,
+    solutionGates: {GateType.and: 1, GateType.or: 1, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'BIN'],
       outputNames: ['DIFF', 'BOUT'],
@@ -1074,6 +1116,7 @@ const List<Level> kLevels = [
     outputCount: 3,
     palette: _fullSet,
     par: 3,
+    solutionGates: {GateType.or: 1, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A2', 'A1', 'A0'],
       outputNames: ['N2', 'N1', 'N0'],
@@ -1098,6 +1141,7 @@ const List<Level> kLevels = [
     outputCount: 3,
     palette: _fullSet,
     par: 8,
+    solutionGates: {GateType.and: 3, GateType.or: 2, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A1', 'A0', 'B1', 'B0'],
       outputNames: ['CARRY', 'S1', 'S0'],
@@ -1130,6 +1174,7 @@ const List<Level> kLevels = [
     outputCount: 4,
     palette: _fullSet,
     par: 9,
+    solutionGates: {GateType.and: 7, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A1', 'A0', 'B1', 'B0'],
       outputNames: ['P3', 'P2', 'P1', 'P0'],
@@ -1162,6 +1207,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 3,
+    solutionGates: {GateType.and: 1, GateType.xor: 2},
     showTargetTable: false,
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
@@ -1187,6 +1233,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 5,
+    solutionGates: {GateType.not: 1, GateType.and: 2, GateType.xor: 2},
     showTargetTable: false,
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
@@ -1212,6 +1259,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 2,
+    solutionGates: {GateType.xor: 2},
     showTargetTable: false,
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
@@ -1237,6 +1285,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 7,
+    solutionGates: {GateType.and: 3, GateType.or: 4},
     showTargetTable: false,
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
@@ -1270,6 +1319,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 4,
+    solutionGates: {GateType.not: 1, GateType.and: 2, GateType.or: 1},
     showTargetTable: false,
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
@@ -1303,6 +1353,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _noInverter,
     par: 1,
+    solutionGates: {GateType.xor: 1},
     target: TruthTable(
       inputNames: ['A'],
       outputNames: ['Q'],
@@ -1321,6 +1372,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _ringSum,
     par: 3,
+    solutionGates: {GateType.and: 1, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],
@@ -1341,6 +1393,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _primitives,
     par: 4,
+    solutionGates: {GateType.not: 1, GateType.and: 2, GateType.or: 1},
     gateLimit: 4,
     target: TruthTable(
       inputNames: ['A', 'B'],
@@ -1362,6 +1415,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _nandOnly,
     par: 4,
+    solutionGates: {GateType.nand: 4},
     target: TruthTable(
       inputNames: ['A', 'B', 'S'],
       outputNames: ['Q'],
@@ -1386,6 +1440,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _norOnly,
     par: 6,
+    solutionGates: {GateType.nor: 6},
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
       outputNames: ['Q'],
@@ -1410,6 +1465,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 2,
+    solutionGates: {GateType.and: 1, GateType.xor: 1},
     gateLimit: 2,
     target: TruthTable(
       inputNames: ['A', 'B', 'C'],
@@ -1435,6 +1491,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 5,
+    solutionGates: {GateType.not: 1, GateType.or: 2, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['SEG A'],
@@ -1467,6 +1524,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 12,
+    solutionGates: {GateType.not: 2, GateType.and: 3, GateType.or: 3, GateType.xor: 4},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['SEG B', 'SEG C'],
@@ -1499,6 +1557,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 11,
+    solutionGates: {GateType.not: 2, GateType.and: 2, GateType.or: 4, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['Q'],
@@ -1531,6 +1590,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 7,
+    solutionGates: {GateType.not: 1, GateType.and: 2, GateType.or: 1, GateType.xor: 3},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['Q'],
@@ -1563,6 +1623,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 1,
+    solutionGates: {GateType.xor: 1},
     target: TruthTable(
       inputNames: ['A', 'B', 'C', 'D'],
       outputNames: ['Q'],
@@ -1595,6 +1656,7 @@ const List<Level> kLevels = [
     outputCount: 1,
     palette: _fullSet,
     par: 8,
+    solutionGates: {GateType.and: 3, GateType.or: 3, GateType.xor: 2},
     target: TruthTable(
       inputNames: ['S1', 'S0', 'A', 'B'],
       outputNames: ['Q'],
@@ -1627,6 +1689,7 @@ const List<Level> kLevels = [
     outputCount: 2,
     palette: _fullSet,
     par: 9,
+    solutionGates: {GateType.not: 2, GateType.and: 2, GateType.or: 5},
     target: TruthTable(
       inputNames: ['A1', 'A0', 'B1', 'B0'],
       outputNames: ['M1', 'M0'],

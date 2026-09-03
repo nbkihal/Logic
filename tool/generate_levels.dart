@@ -68,6 +68,7 @@ class _Spec {
     required this.outputs,
     required this.palette,
     this.par,
+    this.solution,
     this.hidden = false,
     this.gateLimit,
   });
@@ -82,6 +83,10 @@ class _Spec {
 
   /// Hand-tuned par. Null means "measure it".
   final int? par;
+
+  /// The gate mix of a hand-written reference, where one beats the
+  /// synthesizer. Null means "take the synthesizer's".
+  final Map<GateType, int>? solution;
   final bool hidden;
   final int? gateLimit;
 }
@@ -149,6 +154,8 @@ const _specs = <_Spec>[
     outputs: ['Q'],
     palette: '_primitives',
     par: 5,
+    // XOR from OR, AND, NOT and one more AND (see ReferenceSolutions).
+    solution: {GateType.not: 1, GateType.and: 2, GateType.or: 1},
   ),
   _Spec(
     id: 6,
@@ -232,6 +239,13 @@ const _specs = <_Spec>[
     outputs: ['A>B', 'A=B', 'A<B'],
     palette: '_fullSet',
     par: 9,
+    solution: {
+      GateType.not: 1,
+      GateType.and: 3,
+      GateType.or: 1,
+      GateType.nor: 2,
+      GateType.xor: 2,
+    },
   ),
   // -------------------------------------------------------------- chapter 4
   _Spec(
@@ -282,6 +296,7 @@ const _specs = <_Spec>[
     // NAND beats NOR here by one gate, but only if you spot the shared term;
     // the synthesizer settles for five, so this par is set by hand.
     par: 4,
+    solution: {GateType.nand: 4},
   ),
   // -------------------------------------------------------------- chapter 5
   _Spec(
@@ -600,6 +615,7 @@ const _specs = <_Spec>[
     outputs: ['Q'],
     palette: '_ringSum',
     par: 3,
+    solution: {GateType.and: 1, GateType.xor: 2},
   ),
   _Spec(
     id: 53,
@@ -725,9 +741,12 @@ void main() {
       throw StateError('level ${spec.id} table is the wrong shape');
     }
 
-    final par = spec.par ??
-        LogicSynthesizer(inputCount: spec.inputs.length, palette: palette)
-            .gateCountFor(table);
+    // One synthesizer per level: it is stateful, and the gate mix has to
+    // describe the same solution the par was measured from.
+    final synth =
+        LogicSynthesizer(inputCount: spec.inputs.length, palette: palette);
+    final par = spec.par ?? synth.gateCountFor(table);
+    final mix = spec.solution ?? synth.gateMixFor(table);
 
     buffer
       ..writeln('  Level(')
@@ -738,7 +757,8 @@ void main() {
       ..writeln('    inputCount: ${spec.inputs.length},')
       ..writeln('    outputCount: ${spec.outputs.length},')
       ..writeln('    palette: ${spec.palette},')
-      ..writeln('    par: $par,');
+      ..writeln('    par: $par,')
+      ..writeln('    solutionGates: ${_mix(mix)},');
     if (spec.hidden) buffer.writeln('    showTargetTable: false,');
     if (spec.gateLimit != null) {
       buffer.writeln('    gateLimit: ${spec.gateLimit},');
@@ -763,6 +783,15 @@ void main() {
 }
 
 String _quoted(List<String> names) => names.map((n) => "'$n'").join(', ');
+
+/// A gate mix as Dart source, in the enum's own order so the generated file
+/// is stable between runs.
+String _mix(Map<GateType, int> mix) {
+  final types = mix.keys.toList()..sort((a, b) => a.index.compareTo(b.index));
+  if (types.isEmpty) return 'const {}';
+  final pairs = types.map((t) => 'GateType.${t.name}: ${mix[t]}').join(', ');
+  return '{$pairs}';
+}
 
 String _chapterConst(String chapter) {
   const names = {
