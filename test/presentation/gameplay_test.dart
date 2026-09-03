@@ -358,6 +358,20 @@ void main() {
 
       expect(find.text('TRUTH TABLE'), findsOneWidget);
     });
+
+    testWidgets('a twelve-column table still lays out on a phone',
+        (tester) async {
+      // The multiplier is the widest table in the game: four inputs and four
+      // outputs, wanted and got, is twelve columns on a 400px board.
+      await pumpGame(tester, 45);
+
+      await tester.tap(find.textContaining('Not finished'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('TRUTH TABLE'), findsOneWidget);
+      expect(find.text('want P3'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('gate budget', () {

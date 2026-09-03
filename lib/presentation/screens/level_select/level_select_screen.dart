@@ -35,6 +35,7 @@ class LevelSelectScreen extends ConsumerWidget {
               : constraints.maxWidth >= 600
                   ? 2
                   : 1;
+          final chapters = const LevelRepository().chapters;
 
           return CustomScrollView(
             slivers: [
@@ -47,32 +48,87 @@ class LevelSelectScreen extends ConsumerWidget {
                   child: Text('LEVELS', style: text.headlineLarge),
                 ),
               ),
-              SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: columns,
-                  mainAxisSpacing: AppSpacing.x12,
-                  crossAxisSpacing: AppSpacing.x12,
-                  mainAxisExtent: 128,
+              // One header + grid per chapter. Sixty-odd cards in a single
+              // run reads as a wall; the chapter names are the map.
+              for (final chapter in chapters) ...[
+                SliverToBoxAdapter(
+                  child: ChapterHeading(
+                    chapter: chapter,
+                    progress: progress,
+                  ),
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  childCount: levels.length,
-                  (context, index) {
-                    final level = levels[index];
-                    return LevelCard(
-                      level: level,
-                      progress: progress.forLevel(level.id),
-                      unlocked: progress.isUnlocked(level.id),
-                      onTap: () => context.go(AppRoutes.game(level.id)),
-                    );
-                  },
+                SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    mainAxisSpacing: AppSpacing.x12,
+                    crossAxisSpacing: AppSpacing.x12,
+                    mainAxisExtent: 128,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    childCount: chapter.levels.length,
+                    (context, index) {
+                      final level = chapter.levels[index];
+                      return LevelCard(
+                        level: level,
+                        progress: progress.forLevel(level.id),
+                        unlocked: progress.isUnlocked(level.id),
+                        onTap: () => context.go(AppRoutes.game(level.id)),
+                      );
+                    },
+                  ),
                 ),
-              ),
+              ],
               const SliverToBoxAdapter(
                 child: SizedBox(height: AppSpacing.x24),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// A chapter's name, with how far the player has got inside it.
+class ChapterHeading extends StatelessWidget {
+  const ChapterHeading({
+    super.key,
+    required this.chapter,
+    required this.progress,
+  });
+
+  final Chapter chapter;
+  final Progress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final solved =
+        chapter.levels.where((l) => progress.forLevel(l.id).solved).length;
+
+    return Semantics(
+      header: true,
+      label: '${chapter.name}. $solved of ${chapter.levels.length} solved.',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: AppSpacing.x32,
+          bottom: AppSpacing.x12,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                chapter.name.toUpperCase(),
+                style: text.titleMedium,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.x8),
+            Text('$solved / ${chapter.levels.length}', style: captionStyle()),
+          ],
+        ),
       ),
     );
   }

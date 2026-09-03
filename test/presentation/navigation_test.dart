@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:logic_circuit_builder/app.dart';
 import 'package:logic_circuit_builder/application/progress_controller.dart';
 import 'package:logic_circuit_builder/core/theme/app_colors.dart';
+import 'package:logic_circuit_builder/data/levels/level_repository.dart';
 import 'package:logic_circuit_builder/data/persistence/progress_model.dart';
 import 'package:logic_circuit_builder/data/persistence/progress_store.dart';
 import 'package:logic_circuit_builder/presentation/screens/level_select/level_select_screen.dart';
@@ -56,7 +57,9 @@ void main() {
       );
 
       expect(find.widgetWithText(FilledButton, 'Continue'), findsOneWidget);
-      expect(find.textContaining('3 of 39 stars'), findsOneWidget);
+      // Every level is worth three stars, so the total tracks the arc length.
+      final total = const LevelRepository().count * 3;
+      expect(find.textContaining('3 of $total stars'), findsOneWidget);
     });
   });
 
@@ -158,6 +161,26 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('INVERT IT'), findsOneWidget);
+    });
+
+    testWidgets('groups the arc under chapter headings', (tester) async {
+      await pumpApp(tester);
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Levels'));
+      await tester.pumpAndSettle();
+
+      final chapters = const LevelRepository().chapters;
+      expect(chapters.length, greaterThan(1));
+      // Only the first screenful is laid out, so check the chapter the
+      // player actually lands on rather than the whole run.
+      expect(
+        find.text(chapters.first.name.toUpperCase()),
+        findsOneWidget,
+      );
+      expect(
+        find.text('0 / ${chapters.first.levels.length}'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a locked card does not open', (tester) async {

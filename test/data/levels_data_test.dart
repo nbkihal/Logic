@@ -3,6 +3,7 @@ import 'package:logic_circuit_builder/data/levels/level_repository.dart';
 import 'package:logic_circuit_builder/data/levels/levels_data.dart';
 import 'package:logic_circuit_builder/data/levels/reference_functions.dart';
 import 'package:logic_circuit_builder/domain/models/gate_type.dart';
+import 'package:logic_circuit_builder/domain/models/level.dart';
 
 void main() {
   group('content correctness (CLAUDE.md §15)', () {
@@ -70,43 +71,92 @@ void main() {
   });
 
   group('difficulty curve (CLAUDE.md §8)', () {
-    // The capstone is the one deliberate exception: it stacks levers by
-    // design and is gated behind finishing the teaching arc (CLAUDE.md §8).
-    final taught = kLevels.sublist(0, kLevels.length - 1);
+    /// Consecutive pairs inside one chapter. The curve is a within-chapter
+    /// promise: a new chapter is allowed to change the subject, and the
+    /// capstone that closes one is allowed to stack levers on purpose.
+    Iterable<(Level, Level)> stepsWithinChapters() sync* {
+      for (var i = 1; i < kLevels.length; i++) {
+        final previous = kLevels[i - 1];
+        final level = kLevels[i];
+        if (previous.chapter != level.chapter) continue;
+        if (level.name.startsWith('Capstone')) continue;
+        yield (previous, level);
+      }
+    }
 
-    test('input count never jumps by more than one', () {
-      for (var i = 1; i < taught.length; i++) {
-        final delta = taught[i].inputCount - taught[i - 1].inputCount;
+    test('input count never jumps by more than one inside a chapter', () {
+      for (final (previous, level) in stepsWithinChapters()) {
+        final delta = level.inputCount - previous.inputCount;
         expect(
           delta,
           lessThanOrEqualTo(1),
-          reason: 'level ${taught[i].id} adds $delta inputs at once',
+          reason: 'level ${level.id} adds $delta inputs at once',
         );
       }
     });
 
-    test('output count never jumps by more than one', () {
-      for (var i = 1; i < taught.length; i++) {
-        final delta = taught[i].outputCount - taught[i - 1].outputCount;
+    test('output count never jumps by more than one inside a chapter', () {
+      for (final (previous, level) in stepsWithinChapters()) {
+        final delta = level.outputCount - previous.outputCount;
         expect(
           delta,
           lessThanOrEqualTo(1),
-          reason: 'level ${taught[i].id} adds $delta outputs at once',
+          reason: 'level ${level.id} adds $delta outputs at once',
         );
       }
     });
 
-    test('exactly one level is a black box, and it is not the first', () {
+    test('chapters are named, non-empty and contiguous', () {
+      final seen = <String>[];
+      for (final level in kLevels) {
+        expect(level.chapter, isNotEmpty, reason: 'level ${level.id}');
+        if (seen.isEmpty || seen.last != level.chapter) {
+          expect(
+            seen,
+            isNot(contains(level.chapter)),
+            reason: 'chapter ${level.chapter} is split in two',
+          );
+          seen.add(level.chapter);
+        }
+      }
+      expect(seen.length, greaterThan(1));
+    });
+
+    test('black boxes exist, and none of them opens the game', () {
       final hidden = kLevels.where((l) => !l.showTargetTable).toList();
-      expect(hidden, hasLength(1));
-      expect(hidden.single.id, greaterThan(1));
+      expect(hidden, isNotEmpty);
+      for (final level in hidden) {
+        expect(level.id, greaterThan(1), reason: 'level ${level.id}');
+      }
     });
 
-    test('the NAND-only stages really are NAND-only', () {
-      for (final id in [7, 8]) {
+    test('the single-gate stages really are single-gate', () {
+      const nandOnly = [7, 8, 18, 54];
+      const norOnly = [14, 15, 16, 17, 55];
+      for (final id in nandOnly) {
         final level = kLevels.firstWhere((l) => l.id == id);
         expect(level.palette, {GateType.nand}, reason: 'level $id');
       }
+      for (final id in norOnly) {
+        final level = kLevels.firstWhere((l) => l.id == id);
+        expect(level.palette, {GateType.nor}, reason: 'level $id');
+      }
+    });
+
+    test('a gate limit always leaves room for par', () {
+      for (final level in kLevels) {
+        final limit = level.gateLimit;
+        if (limit == null) continue;
+        expect(
+          limit,
+          greaterThanOrEqualTo(level.par),
+          reason: 'level ${level.id} caps below its own par',
+        );
+      }
+    });
+
+    test('the arc is long enough to be worth a chapter list', () {
+      expect(kLevels, hasLength(greaterThanOrEqualTo(60)));
     });
   });
 

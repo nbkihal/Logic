@@ -97,36 +97,43 @@ class _Table extends StatelessWidget {
   Widget build(BuildContext context) {
     final table = level.target;
     const style = AppTypography.pinLabel;
+    // Later stages run to four inputs and four outputs, i.e. twelve columns.
+    // Rather than squeeze those into a phone width until the digits are
+    // unreadable, hold a floor per column and let the table scroll sideways.
+    final columns = table.inputCount + table.outputCount * 2;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _Row(
-          cells: [
-            ...table.inputNames,
-            ...table.outputNames.map((name) => 'want $name'),
-            ...table.outputNames.map((name) => 'got $name'),
-          ],
-          style: AppTypography.textTheme.labelSmall!,
-          background: AppColors.pumice,
-        ),
-        for (var i = 0; i < table.rowCount; i++)
+    return _HorizontalOverflow(
+      minWidth: _markerWidth + columns * _minCellWidth,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           _Row(
             cells: [
-              ...table.inputsAt(i).map((b) => b ? '1' : '0'),
-              ...table.outputsAt(i).map((b) => b ? '1' : '0'),
-              ...List<String>.generate(
-                table.outputCount,
-                (j) => _actual(i, j),
-              ),
+              ...table.inputNames,
+              ...table.outputNames.map((name) => 'want $name'),
+              ...table.outputNames.map((name) => 'got $name'),
             ],
-            style: style,
-            background: _rowColour(i),
-            // A failing row is marked by weight and an arrow as well as by
-            // fill, so it reads without colour.
-            marker: _matches(i) ? null : '!',
+            style: AppTypography.textTheme.labelSmall!,
+            background: AppColors.pumice,
           ),
-      ],
+          for (var i = 0; i < table.rowCount; i++)
+            _Row(
+              cells: [
+                ...table.inputsAt(i).map((b) => b ? '1' : '0'),
+                ...table.outputsAt(i).map((b) => b ? '1' : '0'),
+                ...List<String>.generate(
+                  table.outputCount,
+                  (j) => _actual(i, j),
+                ),
+              ],
+              style: style,
+              background: _rowColour(i),
+              // A failing row is marked by weight and an arrow as well as by
+              // fill, so it reads without colour.
+              marker: _matches(i) ? null : '!',
+            ),
+        ],
+      ),
     );
   }
 
@@ -175,7 +182,7 @@ class _Row extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 14,
+            width: _markerWidth,
             child: Text(
               marker ?? '',
               style: style.copyWith(fontWeight: FontWeight.w700),
@@ -183,10 +190,44 @@ class _Row extends StatelessWidget {
           ),
           for (final cell in cells)
             Expanded(
-              child: Text(cell, style: style, textAlign: TextAlign.center),
+              // A long header like "want BORROW" shrinks rather than
+              // overflowing its column.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(cell, style: style, textAlign: TextAlign.center),
+              ),
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Column floor, so a wide table stays legible instead of collapsing.
+const _minCellWidth = 46.0;
+
+/// The gutter holding the failing-row marker.
+const _markerWidth = 14.0;
+
+/// Gives [child] at least [minWidth], scrolling sideways when the panel is
+/// narrower than that.
+class _HorizontalOverflow extends StatelessWidget {
+  const _HorizontalOverflow({required this.minWidth, required this.child});
+
+  final double minWidth;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth;
+        if (available.isFinite && available >= minWidth) return child;
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(width: minWidth, child: child),
+        );
+      },
     );
   }
 }

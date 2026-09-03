@@ -21,12 +21,35 @@ class LevelRepository {
     return null;
   }
 
+  /// The arc split into chapters, in play order. Levels of one chapter are
+  /// contiguous (a `levels_data` test enforces it), so a single pass groups
+  /// them without sorting.
+  List<Chapter> get chapters {
+    final chapters = <Chapter>[];
+    for (final level in _levels) {
+      if (chapters.isEmpty || chapters.last.name != level.chapter) {
+        chapters.add(Chapter(level.chapter, [level]));
+      } else {
+        chapters.last.levels.add(level);
+      }
+    }
+    return chapters;
+  }
+
   /// The level after [id], or null at the end of the arc.
   Level? next(int id) {
     final index = _levels.indexWhere((l) => l.id == id);
     if (index < 0 || index + 1 >= _levels.length) return null;
     return _levels[index + 1];
   }
+}
+
+/// One named run of consecutive levels.
+class Chapter {
+  Chapter(this.name, this.levels);
+
+  final String name;
+  final List<Level> levels;
 }
 
 /// Builds a level's starting board: its input pins on the left, its output

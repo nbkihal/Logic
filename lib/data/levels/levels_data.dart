@@ -3,7 +3,7 @@
 //   dart run tool/generate_levels.dart > lib/data/levels/levels_data.dart
 //
 // Every target table below is expanded from `ReferenceFunctions`, and every
-// par is the gate count of a solution synthesized from that level own
+// par is the gate count of a solution synthesized from that level's own
 // palette, so no stage can ship with an impossible target or an impossible
 // par (CLAUDE.md §15).
 
@@ -441,7 +441,7 @@ const List<Level> kLevels = [
     inputCount: 2,
     outputCount: 1,
     palette: _nandOnly,
-    par: 5,
+    par: 4,
     target: TruthTable(
       inputNames: ['A', 'B'],
       outputNames: ['Q'],

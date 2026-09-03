@@ -306,7 +306,7 @@ class LogicSynthesizer {
   // --------------------------------------------------------------- lowering
 
   /// Rewrites an ideal-basis node into gates this level actually offers.
-  _Node lower(_Node node) {
+  _Node _lower(_Node node) {
     final cached = _lowered[node.key];
     if (cached != null) return cached;
 
@@ -316,13 +316,13 @@ class LogicSynthesizer {
       case _Kind.konst:
         result = node;
       case _Kind.not:
-        result = _lowerNot(lower(node.a!));
+        result = _lowerNot(_lower(node.a!));
       case _Kind.and:
-        result = _lowerAnd(lower(node.a!), lower(node.b!));
+        result = _lowerAnd(_lower(node.a!), _lower(node.b!));
       case _Kind.or:
-        result = _lowerOr(lower(node.a!), lower(node.b!));
+        result = _lowerOr(_lower(node.a!), _lower(node.b!));
       case _Kind.xor:
-        result = _lowerXor(lower(node.a!), lower(node.b!));
+        result = _lowerXor(_lower(node.a!), _lower(node.b!));
       default:
         throw StateError('unexpected ideal node ${node.kind}');
     }
@@ -421,7 +421,7 @@ class LogicSynthesizer {
   /// them per lamp.
   int _cost(_Node node) {
     final scratch = LogicSynthesizer(inputCount: inputCount, palette: palette);
-    return _gatesOf([scratch.lower(node)])
+    return _gatesOf([scratch._lower(node)])
         .where((gate) => !_built.contains(gate.key))
         .length;
   }
@@ -470,7 +470,7 @@ class LogicSynthesizer {
 
       final roots = <_Node>[];
       for (var out = 0; out < table.outputNames.length; out++) {
-        final root = lower(_best(functionOf(table, out)));
+        final root = _lower(_best(functionOf(table, out)));
         roots.add(root);
         _built.addAll(_gatesOf([root]).map((gate) => gate.key));
         // Costs changed now that more of the board is standing, so the
