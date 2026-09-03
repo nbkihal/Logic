@@ -80,10 +80,10 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
 
         return DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.pumice,
+            color: context.colors.pumice,
             borderRadius: BorderRadius.circular(AppRadii.card),
             border: Border.all(
-              color: armed ? AppColors.ember : AppColors.hairline,
+              color: armed ? context.colors.ember : context.colors.hairline,
               width: armed ? 2 : 1.5,
             ),
           ),
@@ -112,6 +112,7 @@ class _CircuitCanvasState extends ConsumerState<CircuitCanvas> {
                                 circuit: circuit,
                                 simulation: simulation,
                                 showGrid: true,
+                                palette: context.colors,
                                 selectedWireId: board.selectedWireId,
                               ),
                             ),
@@ -325,9 +326,9 @@ class _ZoomControls extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.limestone,
+        color: context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.pill),
-        border: Border.all(color: AppColors.obsidian, width: 1.5),
+        border: Border.all(color: context.colors.obsidian, width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

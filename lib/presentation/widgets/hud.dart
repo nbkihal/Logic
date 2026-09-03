@@ -33,9 +33,9 @@ class Hud extends ConsumerWidget {
             vertical: AppSpacing.x8,
           ),
           decoration: BoxDecoration(
-            color: overPar ? AppColors.limestone : AppColors.sulfur,
+            color: overPar ? context.colors.limestone : context.colors.sulfur,
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: AppColors.obsidian, width: 1.5),
+            border: Border.all(color: context.colors.obsidian, width: 1.5),
           ),
           child: Semantics(
             label: '$gates gates placed, par is ${level.par}',
@@ -124,7 +124,7 @@ class _HudButton extends StatelessWidget {
       icon: Icon(icon),
       tooltip: tooltip,
       style: IconButton.styleFrom(
-        disabledForegroundColor: AppColors.obsidianFaint,
+        disabledForegroundColor: context.colors.obsidianFaint,
       ),
     );
   }

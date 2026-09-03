@@ -16,8 +16,12 @@ class CircuitPainter extends CustomPainter {
     required this.circuit,
     required this.simulation,
     required this.showGrid,
+    required this.palette,
     this.selectedWireId,
   });
+
+  /// A painter has no `BuildContext`, so the active palette is handed in.
+  final AppPalette palette;
 
   final Circuit circuit;
   final SimulationResult simulation;
@@ -35,7 +39,7 @@ class CircuitPainter extends CustomPainter {
   /// The grid reads as a halftone dot field rather than graph-paper rules —
   /// the same motif the rest of the design system uses.
   void _paintGrid(Canvas canvas, Size size) {
-    final dot = Paint()..color = AppColors.hairline;
+    final dot = Paint()..color = palette.hairline;
     const step = CanvasConstants.gridCell;
 
     for (var x = step; x < size.width; x += step) {
@@ -63,7 +67,7 @@ class CircuitPainter extends CustomPainter {
         continue;
       }
       if (wire.id == selectedWireId) {
-        canvas.drawPath(path, _paint(AppColors.plasmaViolet, width: 9));
+        canvas.drawPath(path, _paint(palette.plasmaViolet, width: 9));
       }
 
       final value = simulation.valueAt(wire.from.id);
@@ -71,23 +75,23 @@ class CircuitPainter extends CustomPainter {
         case Logic.high:
           // An energised wire gets a soft bloom under the stroke, so value
           // reads from brightness as well as hue.
-          canvas.drawPath(path, _paint(SignalColors.bloom, width: 8));
-          canvas.drawPath(path, _paint(SignalColors.high));
+          canvas.drawPath(path, _paint(palette.bloom, width: 8));
+          canvas.drawPath(path, _paint(palette.signalHigh));
         case Logic.low:
-          canvas.drawPath(path, _paint(SignalColors.low));
+          canvas.drawPath(path, _paint(palette.signalLow));
         case Logic.floating:
           // Dashed, so floating is legible without relying on colour.
           canvas.drawPath(
             _dashed(path),
-            _paint(SignalColors.floating, width: 2),
+            _paint(palette.signalFloating, width: 2),
           );
       }
     }
   }
 
   void _strokeCycle(Canvas canvas, Path path) {
-    canvas.drawPath(path, _paint(SignalColors.warning, width: 7));
-    canvas.drawPath(path, _paint(AppColors.obsidian, width: 2));
+    canvas.drawPath(path, _paint(palette.warning, width: 7));
+    canvas.drawPath(path, _paint(palette.obsidian, width: 2));
   }
 
   Paint _paint(Color color, {double width = CanvasConstants.wireStroke}) =>
@@ -113,6 +117,7 @@ class CircuitPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CircuitPainter old) =>
+      old.palette != palette ||
       old.showGrid != showGrid ||
       old.selectedWireId != selectedWireId ||
       !identical(old.circuit, circuit) ||

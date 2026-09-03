@@ -120,8 +120,9 @@ abstract final class ReferenceFunctions {
     return [for (var n = 0; n < 4; n++) n == line];
   }
 
-  /// Level 34 — 1-to-2 demultiplexer over (D, S): send D down one of two paths.
-  static List<bool> demultiplexer(List<bool> i) => [i[0] && !i[1], i[0] && i[1]];
+  /// Level 34 — 1-to-2 demultiplexer over (D, S): D down one of two paths.
+  static List<bool> demultiplexer(List<bool> i) =>
+      [i[0] && !i[1], i[0] && i[1]];
 
   /// Level 35 — (A, B, EN): both channels pass only while enabled.
   static List<bool> gatedPair(List<bool> i) => [i[0] && i[2], i[1] && i[2]];
@@ -153,7 +154,8 @@ abstract final class ReferenceFunctions {
   static List<bool> addOne(List<bool> i) => _bits((_value(i) + 1) % 4, 2);
 
   /// Level 41 — half subtractor over (A, B): DIFF, BORROW.
-  static List<bool> halfSubtractor(List<bool> i) => [i[0] != i[1], !i[0] && i[1]];
+  static List<bool> halfSubtractor(List<bool> i) =>
+      [i[0] != i[1], !i[0] && i[1]];
 
   /// Level 42 — full subtractor over (A, B, BIN): DIFF, BORROW OUT.
   static List<bool> fullSubtractor(List<bool> i) {

@@ -101,7 +101,7 @@ class SettingsScreen extends ConsumerWidget {
           Text(
             'Everything is stored on this device. No account, no server, '
             'nothing leaves the phone.',
-            style: text.bodySmall?.copyWith(color: AppColors.obsidianMuted),
+            style: text.bodySmall?.copyWith(color: context.colors.obsidianMuted),
           ),
         ],
       ),
@@ -146,7 +146,7 @@ class _Card extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.x8),
       padding: const EdgeInsets.all(AppSpacing.x20),
       decoration: BoxDecoration(
-        color: AppColors.limestone,
+        color: context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: child,

@@ -62,7 +62,10 @@ class LevelSelectScreen extends ConsumerWidget {
                     crossAxisCount: columns,
                     mainAxisSpacing: AppSpacing.x12,
                     crossAxisSpacing: AppSpacing.x12,
-                    mainAxisExtent: 128,
+                    // Tall enough for a three-line blurb at a large system
+                    // font scale; the later chapters have more to say than
+                    // "flip the signal".
+                    mainAxisExtent: 160,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     childCount: chapter.levels.length,
@@ -169,10 +172,10 @@ class LevelCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.x20),
             decoration: BoxDecoration(
-              color: progress.solved ? AppColors.sulfur : AppColors.limestone,
+              color: progress.solved ? context.colors.sulfur : context.colors.limestone,
               borderRadius: BorderRadius.circular(AppRadii.card),
               border: Border.all(
-                color: unlocked ? AppColors.obsidian : AppColors.hairline,
+                color: unlocked ? context.colors.obsidian : context.colors.hairline,
                 width: 1.5,
               ),
             ),
@@ -203,7 +206,7 @@ class LevelCard extends StatelessWidget {
                   child: Text(
                     level.blurb,
                     style: text.bodySmall,
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

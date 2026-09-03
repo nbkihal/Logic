@@ -114,7 +114,7 @@ class GateWidget extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.small + 4),
-        border: Border.all(color: AppColors.plasmaViolet, width: 3),
+        border: Border.all(color: context.colors.plasmaViolet, width: 3),
       ),
       child: Padding(padding: const EdgeInsets.all(3), child: body),
     );
@@ -199,10 +199,10 @@ class _GateBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.limestone,
+        color: context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.small),
         border: Border.all(
-          color: value.isHigh ? AppColors.ember : AppColors.obsidian,
+          color: value.isHigh ? context.colors.ember : context.colors.obsidian,
           width: 1.5,
         ),
       ),
@@ -235,9 +235,9 @@ class _PinBody extends StatelessWidget {
     final high = value.isHigh;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: high ? AppColors.ember : AppColors.limestone,
+        color: high ? context.colors.ember : context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.pill),
-        border: Border.all(color: AppColors.obsidian, width: 1.5),
+        border: Border.all(color: context.colors.obsidian, width: 1.5),
       ),
       child: Center(
         child: Row(
@@ -270,12 +270,12 @@ class _LampBody extends StatelessWidget {
         DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: high ? AppColors.ember : AppColors.limestone,
-            border: Border.all(color: AppColors.obsidian, width: 1.5),
+            color: high ? context.colors.ember : context.colors.limestone,
+            border: Border.all(color: context.colors.obsidian, width: 1.5),
             boxShadow: high
-                ? const [
+                ? [
                     BoxShadow(
-                      color: SignalColors.bloom,
+                      color: context.colors.bloom,
                       blurRadius: 16,
                       spreadRadius: 2,
                     ),
@@ -328,9 +328,9 @@ class _PortTarget extends StatelessWidget {
         highlighted ? CanvasConstants.portRadius + 3 : CanvasConstants.portRadius;
 
     final fill = switch (value) {
-      Logic.high => SignalColors.high,
-      Logic.low => SignalColors.low,
-      Logic.floating => AppColors.limestone,
+      Logic.high => context.colors.signalHigh,
+      Logic.low => context.colors.signalLow,
+      Logic.floating => context.colors.limestone,
     };
 
     return Positioned(
@@ -357,10 +357,10 @@ class _PortTarget extends StatelessWidget {
                   color: fill,
                   border: Border.all(
                     color: highlighted
-                        ? AppColors.plasmaViolet
+                        ? context.colors.plasmaViolet
                         : value.isFloating
-                            ? SignalColors.floating
-                            : AppColors.obsidian,
+                            ? context.colors.signalFloating
+                            : context.colors.obsidian,
                     width: highlighted ? 3 : 1.5,
                   ),
                 ),

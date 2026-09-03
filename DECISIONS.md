@@ -53,6 +53,52 @@ optional tools. Stages 7 and 8 are defined by their restriction to NAND, so
 the extras are withheld there. Stages 6, 9 and 10 get them; 11-13 use the
 full set.
 
+### The arc runs to 63 stages across 11 chapters
+
+§8 sketches 13 stages and calls the count approximate ("~13 hand-designed
+stages"). Thirteen is enough to teach the ideas once and not enough to play,
+so the arc was extended to **63**, grouped into named chapters:
+
+| Chapter | Stages | Subject |
+| --- | --- | --- |
+| First Signals | 1-6 | wiring, the primitive gates, a second output |
+| Nothing But NAND | 7-8 | universality |
+| Deeper Boards | 9-13 | black box, three inputs, the comparator capstone |
+| The Universal Gates | 14-18 | the same trick from NOR, and NAND vs NOR |
+| Everyday Logic | 19-25 | alarms, lifts, vending machines, a bank vault |
+| Counting Bits | 26-32 | thresholds, parity, population counts |
+| Choosing and Routing | 33-38 | decoders, demultiplexers, a priority encoder |
+| The Arithmetic Unit | 39-45 | subtractors, negation, an adder, a multiplier |
+| Detective Work | 46-50 | five black boxes |
+| Under Constraint | 51-56 | gate budgets and deliberately crippled palettes |
+| The Grand Workshop | 57-63 | seven-segment drivers, number theory, an ALU |
+
+Two §8 rules were rewritten to match, and the tests with them:
+
+- **The difficulty curve is a within-chapter promise.** Inputs and outputs
+  still grow one at a time, but a new chapter may change the subject — the
+  arc drops from a four-input capstone back to one input at stage 14 on
+  purpose. Levels named `Capstone:` are exempt, as stage 13 already was.
+- **More than one black box.** §8 has a single reverse-engineering stage;
+  Detective Work makes it a category. The test now checks that black boxes
+  exist and that none of them opens the game.
+
+### Stages 14 onward are generated, not typed
+
+Sixty tables of up to sixteen rows is a lot of hand-typed booleans, and §15
+exists because a mistyped row is the failure mode that reaches a player.
+`tool/generate_levels.dart` expands every table from `ReferenceFunctions` and
+writes `levels_data.dart`; the shipped file is still hard-coded data, as §8
+requires, and the §15 test still recomputes it independently.
+
+Par is generated too. `test/fixtures/synthesis.dart` minimizes each output,
+lowers it onto the level's own palette — the universal NAND and NOR
+constructions included — and the gate count of the result *is* the par. So
+par can never be below what is achievable, and the reference solution the §15
+solvability test uses is the same circuit. Four stages beat the synthesizer
+and keep a hand-tuned par with a hand-written reference: 5, 13, 18 (XOR from
+four NANDs, sharing the middle term) and 52 (`A + B = A XOR B XOR AB`).
+
 ### Graph algorithms are extensions on `Circuit`
 
 §5 lists `toposort()` and `hasCycle()` as `Circuit` helpers, while §9 puts the

@@ -22,42 +22,46 @@ abstract final class AppTypography {
   /// Positive tracking scales with size (~0.02em) so heavy strokes breathe.
   static double _tracking(double size) => size * 0.02;
 
-  static TextStyle _display(double size, double height) => TextStyle(
+  static TextStyle _display(double size, double height, Color ink) => TextStyle(
         fontFamily: display,
         fontSize: size,
         height: height,
         letterSpacing: _tracking(size),
-        color: AppColors.obsidian,
+        color: ink,
       );
 
-  static TextStyle _body(double size, double height) => TextStyle(
+  static TextStyle _body(double size, double height, Color ink) => TextStyle(
         fontFamily: body,
         fontVariations: _medium,
         fontWeight: FontWeight.w500,
         fontSize: size,
         height: height,
-        color: AppColors.obsidian,
+        color: ink,
       );
 
-  /// Maps the Caldera scale onto Material's slots so widgets inherit it.
-  static TextTheme get textTheme => TextTheme(
+  /// The scale in the default palette's ink. Themed screens go through
+  /// [textThemeFor], which is what `AppTheme.build` hands to Material.
+  static TextTheme get textTheme => textThemeFor(AppPalette.caldera.obsidian);
+
+  /// Maps the type scale onto Material's slots, in [ink].
+  static TextTheme textThemeFor(Color ink) => TextTheme(
         // Display face — structural scale only (>= 26px).
-        displayLarge: _display(96, 0.95),
-        displayMedium: _display(80, 1.1),
-        displaySmall: _display(56, 1.0),
-        headlineLarge: _display(48, 1.0),
-        headlineMedium: _display(32, 1.0),
-        headlineSmall: _display(26, 1.2),
+        displayLarge: _display(96, 0.95, ink),
+        displayMedium: _display(80, 1.1, ink),
+        displaySmall: _display(56, 1.0, ink),
+        headlineLarge: _display(48, 1.0, ink),
+        headlineMedium: _display(32, 1.0, ink),
+        headlineSmall: _display(26, 1.2, ink),
         // Body face — DM Sans Medium.
-        titleLarge: _body(30, 1.5),
-        titleMedium: _body(18, 1.4),
-        titleSmall: _body(16, 1.4),
-        bodyLarge: _body(16, 1.55),
-        bodyMedium: _body(14, 1.2),
-        bodySmall: _body(12, 1.2),
-        labelLarge: _body(16, 1.2),
-        labelMedium: _body(14, 1.2),
-        labelSmall: _body(12, 1.2),
+        titleLarge: _body(30, 1.5, ink),
+        titleMedium: _body(18, 1.4, ink),
+        titleSmall: _body(16, 1.4, ink),
+        bodyLarge: _body(16, 1.55, ink),
+        bodyMedium: _body(14, 1.2, ink),
+        bodySmall: _body(12, 1.2, ink),
+        labelLarge: _body(16, 1.2, ink),
+        labelMedium: _body(14, 1.2, ink),
+        labelSmall: _body(12, 1.2, ink),
       );
 
   /// Value glyphs and pin labels on the canvas.
@@ -74,6 +78,7 @@ abstract final class AppTypography {
     fontSize: 12,
     height: 1.2,
     letterSpacing: 0.5,
-    color: AppColors.obsidian,
+    // No colour: pin labels inherit the surrounding ink, so they follow the
+    // active palette without every call site restating it.
   );
 }

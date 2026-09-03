@@ -22,7 +22,7 @@ class HomeScreen extends ConsumerWidget {
     final wide = MediaQuery.sizeOf(context).width >= 768;
 
     return Scaffold(
-      backgroundColor: AppColors.pumice,
+      backgroundColor: context.colors.pumice,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -37,7 +37,7 @@ class HomeScreen extends ConsumerWidget {
                   Text(
                     'LOGIC',
                     style: (wide ? text.displayLarge : text.displaySmall)
-                        ?.copyWith(color: AppColors.ember),
+                        ?.copyWith(color: context.colors.ember),
                   ),
                   const SizedBox(height: AppSpacing.x8),
                   Text(
@@ -49,7 +49,8 @@ class HomeScreen extends ConsumerWidget {
                     constraints: const BoxConstraints(maxWidth: 480),
                     child: Text(
                       'Wire gates together until the lamps match the table. '
-                      'From a single NOT gate to a full adder.',
+                      'Sixty-three stages, from a single NOT gate to a '
+                      'two-bit multiplier.',
                       style: text.bodyLarge,
                     ),
                   ),
@@ -82,7 +83,7 @@ class HomeScreen extends ConsumerWidget {
                       '${progress.totalStars} of ${levelCount * 3} stars — '
                       'up to level $resume.',
                       style: text.bodySmall
-                          ?.copyWith(color: AppColors.obsidianMuted),
+                          ?.copyWith(color: context.colors.obsidianMuted),
                     ),
                   ],
                 ],

@@ -2,7 +2,14 @@
 
 An educational Boolean-logic puzzle game. Drag logic gates onto a board, wire
 them together, and make the outputs match a target truth table — from a single
-NOT gate up to a 2-bit comparator.
+NOT gate up to a two-bit multiplier.
+
+Sixty-three stages in eleven chapters: the primitive gates, universality from
+NAND and from NOR alone, everyday wiring puzzles (seatbelt chimes, lifts, a
+bank vault), bit counting, decoders and encoders, arithmetic, five black boxes
+to reverse-engineer, stages under a hard gate budget or a deliberately
+crippled palette, and a workshop of seven-segment drivers, number theory and
+a tiny ALU.
 
 Flutter, one codebase, targeting Android, iOS and Web.
 
@@ -85,8 +92,14 @@ Dependency direction is `presentation -> application -> data -> domain`, and
   diff, so the tester can highlight exactly which rows fail.
 
 Every level's truth table is verified against an independent reference
-function, and every level has a stored reference solution that must solve it
-within par — a par that is quietly impossible fails the suite.
+function, and every level has a reference solution that must solve it within
+par — a par that is quietly impossible fails the suite.
+
+From stage 14 the tables and pars are generated rather than typed. `dart run
+tool/generate_levels.dart > lib/data/levels/levels_data.dart` expands each
+table from its reference function and sets par to the gate count of a
+solution synthesized from that level's own palette, so par and the reference
+solution can never drift apart.
 
 ## Docs
 

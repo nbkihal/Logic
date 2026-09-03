@@ -36,7 +36,7 @@ class WinOverlay extends StatelessWidget {
       label: 'Level solved with $stars of 3 stars, using $gateCount gates. '
           'Par is ${level.par}.',
       child: ColoredBox(
-        color: AppColors.obsidian.withValues(alpha: 0.55),
+        color: context.colors.obsidian.withValues(alpha: 0.55),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.x24),
@@ -44,7 +44,7 @@ class WinOverlay extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 420),
               padding: const EdgeInsets.all(AppSpacing.x32),
               decoration: BoxDecoration(
-                color: AppColors.limestone,
+                color: context.colors.limestone,
                 borderRadius: BorderRadius.circular(AppRadii.card),
               ),
               child: Column(
@@ -64,8 +64,8 @@ class WinOverlay extends StatelessWidget {
                             i < stars ? Icons.star : Icons.star_border,
                             size: 40,
                             color: i < stars
-                                ? AppColors.ember
-                                : AppColors.obsidianFaint,
+                                ? context.colors.ember
+                                : context.colors.obsidianFaint,
                           ),
                         ),
                     ],
@@ -129,7 +129,7 @@ class StarRow extends StatelessWidget {
             Icon(
               i < stars ? Icons.star : Icons.star_border,
               size: size,
-              color: i < stars ? AppColors.ember : AppColors.obsidianFaint,
+              color: i < stars ? context.colors.ember : context.colors.obsidianFaint,
             ),
         ],
       ),

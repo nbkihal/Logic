@@ -101,9 +101,9 @@ class _PaletteChip extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 64),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.x16),
           decoration: BoxDecoration(
-            color: armed ? AppColors.ember : AppColors.limestone,
+            color: armed ? context.colors.ember : context.colors.limestone,
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: AppColors.obsidian, width: 1.5),
+            border: Border.all(color: context.colors.obsidian, width: 1.5),
           ),
           child: Center(
             child: Text(
@@ -151,10 +151,10 @@ class _DeleteButton extends ConsumerWidget {
         tooltip: 'Delete selection',
         style: IconButton.styleFrom(
           backgroundColor:
-              enabled ? AppColors.sulfur : AppColors.limestone,
-          disabledForegroundColor: AppColors.obsidianFaint,
+              enabled ? context.colors.sulfur : context.colors.limestone,
+          disabledForegroundColor: context.colors.obsidianFaint,
           side: BorderSide(
-            color: enabled ? AppColors.obsidian : AppColors.hairline,
+            color: enabled ? context.colors.obsidian : context.colors.hairline,
             width: 1.5,
           ),
         ),

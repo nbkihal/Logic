@@ -161,7 +161,7 @@ class _Step extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.x8),
       padding: const EdgeInsets.all(AppSpacing.x20),
       decoration: BoxDecoration(
-        color: AppColors.limestone,
+        color: context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Row(
@@ -197,7 +197,7 @@ class _Legend extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.x20),
       decoration: BoxDecoration(
-        color: AppColors.limestone,
+        color: context.colors.limestone,
         borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
@@ -205,18 +205,18 @@ class _Legend extends StatelessWidget {
         children: [
           Text('SIGNALS', style: text.labelSmall?.copyWith(letterSpacing: 2)),
           const SizedBox(height: AppSpacing.x12),
-          const _LegendRow(
-            colour: SignalColors.high,
+          _LegendRow(
+            colour: context.colors.signalHigh,
             glyph: '1',
             label: 'Carrying a one — the wire glows.',
           ),
-          const _LegendRow(
-            colour: SignalColors.low,
+          _LegendRow(
+            colour: context.colors.signalLow,
             glyph: '0',
             label: 'Carrying a zero — the wire is dark.',
           ),
-          const _LegendRow(
-            colour: SignalColors.floating,
+          _LegendRow(
+            colour: context.colors.signalFloating,
             glyph: 'X',
             label: 'Nothing connected — the wire is dashed.',
             dashed: true,

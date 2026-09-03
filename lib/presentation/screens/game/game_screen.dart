@@ -65,7 +65,7 @@ class _GameViewState extends ConsumerState<_GameView> {
     _listenForNudges();
 
     return Scaffold(
-      backgroundColor: AppColors.pumice,
+      backgroundColor: context.colors.pumice,
       body: SafeArea(
         child: Stack(
           children: [
@@ -165,7 +165,7 @@ class _GameViewState extends ConsumerState<_GameView> {
   Future<void> _openTester(BuildContext context, Level level) {
     return showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.limestone,
+      backgroundColor: context.colors.limestone,
       showDragHandle: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -248,7 +248,7 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = statusFor(report);
+    final status = statusFor(report, context.colors);
 
     return Semantics(
       button: true,
@@ -265,7 +265,7 @@ class _StatusPill extends StatelessWidget {
           decoration: BoxDecoration(
             color: status.background,
             borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: AppColors.obsidian, width: 1.5),
+            border: Border.all(color: context.colors.obsidian, width: 1.5),
           ),
           child: Row(
             children: [
@@ -294,7 +294,7 @@ class _UnknownLevel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.pumice,
+      backgroundColor: context.colors.pumice,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

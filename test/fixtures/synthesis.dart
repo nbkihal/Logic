@@ -102,11 +102,15 @@ class LogicSynthesizer {
         candidates.add(_Node.and(_Node.input(i), _best(high, budget)));
       }
       if (f & v == 0) {
-        candidates.add(_Node.and(_Node.not(_Node.input(i)), _best(low, budget)));
+        final notI = _Node.not(_Node.input(i));
+        candidates.add(_Node.and(notI, _best(low, budget)));
       }
-      if (f & v == v) candidates.add(_Node.or(_Node.input(i), _best(low, budget)));
+      if (f & v == v) {
+        candidates.add(_Node.or(_Node.input(i), _best(low, budget)));
+      }
       if (f & nv == nv) {
-        candidates.add(_Node.or(_Node.not(_Node.input(i)), _best(high, budget)));
+        final notI = _Node.not(_Node.input(i));
+        candidates.add(_Node.or(notI, _best(high, budget)));
       }
 
       // Factored splits. When one cofactor implies the other, the mux

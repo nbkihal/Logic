@@ -20,7 +20,7 @@ class CalderaScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.pumice,
+      backgroundColor: context.colors.pumice,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

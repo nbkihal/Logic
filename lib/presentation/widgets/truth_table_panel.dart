@@ -14,32 +14,33 @@ import '../../domain/models/level.dart';
 /// and saying so keeps the feedback honest (CLAUDE.md §6.3).
 ({String text, Color background, IconData icon}) statusFor(
   SolveReport report,
+  AppPalette colors,
 ) =>
     switch (report.status) {
       SolveStatus.solved => (
           text: 'Solved',
-          background: AppColors.ember,
+          background: colors.ember,
           icon: Icons.check_circle_outline,
         ),
       SolveStatus.incomplete => (
           text: 'Not finished — some inputs are unconnected',
-          background: AppColors.sulfur,
+          background: colors.sulfur,
           icon: Icons.link_off,
         ),
       SolveStatus.cyclic => (
           text: 'This wiring loops back on itself',
-          background: AppColors.sulfur,
+          background: colors.sulfur,
           icon: Icons.autorenew,
         ),
       SolveStatus.mismatched => (
           text: '${report.failingRows.length} of ${report.rows.length} '
               'rows still wrong',
-          background: AppColors.limestone,
+          background: colors.limestone,
           icon: Icons.error_outline,
         ),
       SolveStatus.malformed => (
           text: 'Board does not match this level',
-          background: AppColors.limestone,
+          background: colors.limestone,
           icon: Icons.help_outline,
         ),
     };
@@ -114,7 +115,7 @@ class _Table extends StatelessWidget {
               ...table.outputNames.map((name) => 'got $name'),
             ],
             style: AppTypography.textTheme.labelSmall!,
-            background: AppColors.pumice,
+            background: context.colors.pumice,
           ),
           for (var i = 0; i < table.rowCount; i++)
             _Row(
@@ -127,7 +128,7 @@ class _Table extends StatelessWidget {
                 ),
               ],
               style: style,
-              background: _rowColour(i),
+              background: _rowColour(context, i),
               // A failing row is marked by weight and an arrow as well as by
               // fill, so it reads without colour.
               marker: _matches(i) ? null : '!',
@@ -147,10 +148,10 @@ class _Table extends StatelessWidget {
     return values[output].glyph;
   }
 
-  Color _rowColour(int row) {
-    if (report.rows.isEmpty) return AppColors.limestone;
-    if (report.status == SolveStatus.solved) return AppColors.sulfur;
-    return _matches(row) ? AppColors.limestone : AppColors.pumice;
+  Color _rowColour(BuildContext context, int row) {
+    if (report.rows.isEmpty) return context.colors.limestone;
+    if (report.status == SolveStatus.solved) return context.colors.sulfur;
+    return _matches(row) ? context.colors.limestone : context.colors.pumice;
   }
 }
 
